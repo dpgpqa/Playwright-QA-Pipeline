@@ -95,11 +95,12 @@ const testWithReset = extendedTest.extend<{ page: Page }>({
   page: async ({ page }, use, testInfo) => {
     await use(page);
 
-    const usesAuth = testInfo.title.includes('@smoke') ||
-                     testInfo.title.includes('@regression') ||
-                     testInfo.title.includes('@api') ||
-                     testInfo.title.includes('@a11y') ||
-                     testInfo.title.includes('@visual');
+    const usesAuth =
+      testInfo.title.includes('@smoke') ||
+      testInfo.title.includes('@regression') ||
+      testInfo.title.includes('@api') ||
+      testInfo.title.includes('@a11y') ||
+      testInfo.title.includes('@visual');
 
     if (usesAuth) {
       try {

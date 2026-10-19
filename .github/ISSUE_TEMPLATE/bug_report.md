@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Report a bug in the test suite or infrastructure
-title: "[BUG] "
+title: '[BUG] '
 labels: bug
 assignees: diegozaito
 ---

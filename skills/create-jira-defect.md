@@ -37,14 +37,44 @@ if (existing.issues.length > 0) {
       "type": "doc",
       "version": 1,
       "content": [
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Automated test failure from QA run." }] },
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "text": "Automated test failure from QA run." }]
+        },
         { "type": "paragraph", "content": [{ "type": "text", "text": "Ticket: PROJ-123" }] },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Test: Checkout with invalid card (@regression)" }] },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Error: TimeoutError: locator.fill: Timeout 15000ms exceeded." }] },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Trace: test-results/regression-checkout-invalid-card/trace.zip" }] },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Environment: staging (https://staging.example.com)" }] },
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "text": "Test: Checkout with invalid card (@regression)" }]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Error: TimeoutError: locator.fill: Timeout 15000ms exceeded."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Trace: test-results/regression-checkout-invalid-card/trace.zip"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Environment: staging (https://staging.example.com)" }
+          ]
+        },
         { "type": "paragraph", "content": [{ "type": "text", "text": "Commit: abc1234" }] },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Run report: reports/runs/2024-01-15-PROJ-123.md" }] }
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "text": "Run report: reports/runs/2024-01-15-PROJ-123.md" }]
+        }
       ]
     },
     "issuetype": { "name": "Bug" },

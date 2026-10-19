@@ -1,4 +1,4 @@
-import type { APIRequestContext} from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 import { request } from '@playwright/test';
 import { z } from 'zod';
 
@@ -112,7 +112,7 @@ export class JiraApi {
     };
 
     if (defect.labels?.length) fields.labels = defect.labels;
-    if (defect.components?.length) fields.components = defect.components.map((c) => ({ name: c }));
+    if (defect.components?.length) fields.components = defect.components.map(c => ({ name: c }));
     if (defect.assignee) fields.assignee = { accountId: defect.assignee };
 
     const response = await this.client.post('/rest/api/3/issue', {

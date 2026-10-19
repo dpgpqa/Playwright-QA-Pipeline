@@ -1,5 +1,14 @@
 import { z } from 'zod';
-import { randomFirstName, randomLastName, randomEmail, randomAddress, randomCity, randomState, randomZipCode, randomPhone } from '../utils/random';
+import {
+  randomFirstName,
+  randomLastName,
+  randomEmail,
+  randomAddress,
+  randomCity,
+  randomState,
+  randomZipCode,
+  randomPhone,
+} from '../utils/random';
 
 const ShippingSchema = z.object({
   firstName: z.string().min(1),

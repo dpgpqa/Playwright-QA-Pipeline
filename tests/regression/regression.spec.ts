@@ -52,7 +52,11 @@ test.describe('SauceDemo - Regression Tests', () => {
     expect(await inventoryPage.isItemInCart('Sauce Labs Backpack')).toBeFalsy();
   });
 
-  test('@regression Remove item from cart on cart page', async ({ inventoryPage, cartPage, header }) => {
+  test('@regression Remove item from cart on cart page', async ({
+    inventoryPage,
+    cartPage,
+    header,
+  }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
 
@@ -62,14 +66,24 @@ test.describe('SauceDemo - Regression Tests', () => {
     expect(cartItems).not.toContain('Sauce Labs Backpack');
   });
 
-  test('@regression Cart persists after navigation', async ({ inventoryPage, header, cartPage }) => {
+  test('@regression Cart persists after navigation', async ({
+    inventoryPage,
+    header,
+    cartPage,
+  }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
     await cartPage.continueShopping();
     expect(await header.getCartCount()).toBe(1);
   });
 
-  test('@regression Checkout with valid info', async ({ inventoryPage, cartPage, checkoutInfoPage, checkoutOverviewPage, checkoutCompletePage }) => {
+  test('@regression Checkout with valid info', async ({
+    inventoryPage,
+    cartPage,
+    checkoutInfoPage,
+    checkoutOverviewPage,
+    checkoutCompletePage,
+  }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
@@ -102,7 +116,11 @@ test.describe('SauceDemo - Regression Tests', () => {
     expect(error).toContain('Postal Code is required');
   });
 
-  test('@regression Cancel checkout returns to cart', async ({ inventoryPage, cartPage, checkoutInfoPage }) => {
+  test('@regression Cancel checkout returns to cart', async ({
+    inventoryPage,
+    cartPage,
+    checkoutInfoPage,
+  }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
@@ -111,7 +129,12 @@ test.describe('SauceDemo - Regression Tests', () => {
     await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
   });
 
-  test('@regression Cancel overview returns to cart', async ({ inventoryPage, cartPage, checkoutInfoPage, checkoutOverviewPage }) => {
+  test('@regression Cancel overview returns to cart', async ({
+    inventoryPage,
+    cartPage,
+    checkoutInfoPage,
+    checkoutOverviewPage,
+  }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();

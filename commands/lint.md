@@ -28,6 +28,7 @@ npm run typecheck && npm run lint && npm run format:check
 ## CI Gates
 
 The `lint-and-typecheck` job runs all three:
+
 - `tsc --noEmit` — strict mode, no errors
 - `eslint .` — no violations
 - `prettier --check .` — consistent formatting
@@ -35,6 +36,7 @@ The `lint-and-typecheck` job runs all three:
 ## Pre-commit Hook
 
 Automatic via husky + lint-staged:
+
 - `eslint --fix` + `prettier --write` on staged files
 
 ## Skip (Emergency Only)

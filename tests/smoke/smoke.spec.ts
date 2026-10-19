@@ -64,7 +64,11 @@ test.describe('SauceDemo - Checkout Smoke Tests', () => {
     await cartPage.proceedToCheckout();
   });
 
-  test('@smoke Complete checkout flow', async ({ checkoutInfoPage, checkoutOverviewPage, checkoutCompletePage }) => {
+  test('@smoke Complete checkout flow', async ({
+    checkoutInfoPage,
+    checkoutOverviewPage,
+    checkoutCompletePage,
+  }) => {
     await checkoutInfoPage.fillInfo('John', 'Doe', '12345');
     await checkoutInfoPage.continue();
 

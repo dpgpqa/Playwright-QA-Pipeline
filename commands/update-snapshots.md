@@ -49,6 +49,7 @@ tests/visual/snapshots/
 ## Threshold
 
 Configured in `playwright.config.ts`:
+
 - `maxDiffPixels: 100`
 - `threshold: 0.2`
 

@@ -26,10 +26,10 @@ test.describe('Feature Name', () => {
   test('@smoke Happy path description', async ({ pageObject }) => {
     // Arrange
     await pageObject.goto();
-    
+
     // Act
     await pageObject.performAction(data);
-    
+
     // Assert
     expect(await pageObject.getResult()).toBe(expected);
   });
@@ -47,6 +47,7 @@ test.describe('Feature Name', () => {
 ## Tagging
 
 Every test MUST have exactly one layer tag:
+
 - `@smoke` — critical path, < 30s each, runs on every push
 - `@regression` — full coverage, nightly + main pushes
 - `@api` — contract + availability
@@ -56,6 +57,7 @@ Every test MUST have exactly one layer tag:
 ## Output
 
 Write test files to appropriate `tests/` subfolder:
+
 - `tests/smoke/` — @smoke tests
 - `tests/regression/` — @regression tests
 - `tests/api/` — @api tests

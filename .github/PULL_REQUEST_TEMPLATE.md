@@ -67,8 +67,8 @@ Every new test MUST have exactly one layer tag:
 
 ## Screenshots / Traces (if visual/UI changes)
 
-| Test | Before | After |
-|------|--------|-------|
+| Test      | Before         | After         |
+| --------- | -------------- | ------------- |
 | Test name | ![before](url) | ![after](url) |
 
 ## Deploy Notes

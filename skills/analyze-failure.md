@@ -16,12 +16,12 @@ Analyze a failing test and propose a fix following the flake-handling playbook.
 
 ## Classification
 
-| Symptom | Fix |
-|---------|-----|
-| Assertion flakes — state takes time | `expect.poll(...)` |
-| Test is just slow | `test.slow()` |
-| Known race, can't fix now | `@quarantine` + ticket |
-| Passes locally, fails CI | Env issue — not flake |
+| Symptom                             | Fix                      |
+| ----------------------------------- | ------------------------ |
+| Assertion flakes — state takes time | `expect.poll(...)`       |
+| Test is just slow                   | `test.slow()`            |
+| Known race, can't fix now           | `@quarantine` + ticket   |
+| Passes locally, fails CI            | Env issue — not flake    |
 | Fails on retry, passes after re-run | Real flake — investigate |
 
 ## Self-Heal (One Attempt)

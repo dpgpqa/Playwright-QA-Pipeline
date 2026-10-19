@@ -16,12 +16,12 @@ Attempt one self-heal fix for a flaky test (selector/timing only).
 
 ## Common Fixes
 
-| Failure | Fix |
-|---------|-----|
-| `locator('.btn-primary')` timeout | `getByRole('button', { name: 'Submit' })` |
-| `waitForTimeout(2000)` | `expect.poll(() => condition).toBeTruthy()` |
-| `nth(2)` flakes | Add `data-test` to frontend, use `getByTestId` |
-| Element not visible | `expect(locator).toBeVisible()` auto-wait |
+| Failure                           | Fix                                            |
+| --------------------------------- | ---------------------------------------------- |
+| `locator('.btn-primary')` timeout | `getByRole('button', { name: 'Submit' })`      |
+| `waitForTimeout(2000)`            | `expect.poll(() => condition).toBeTruthy()`    |
+| `nth(2)` flakes                   | Add `data-test` to frontend, use `getByTestId` |
+| Element not visible               | `expect(locator).toBeVisible()` auto-wait      |
 
 ## Process
 

@@ -9,27 +9,27 @@
 
 ## Target Applications
 
-| Application | Type | Purpose | Base URL |
-|-------------|------|---------|----------|
-| **SauceDemo** | E2E / Visual / a11y | E-commerce flow (login, cart, checkout) | `https://www.saucedemo.com` |
-| **Restful-Booker** | API | REST API CRUD + auth | `https://restful-booker.herokuapp.com` |
-| **The Internet** | UI Components | Forms, dropdowns, dynamic loading, upload | `https://the-internet.herokuapp.com` |
-| **JSONPlaceholder** | API | REST API (posts, users, albums, todos) | `https://jsonplaceholder.typicode.com` |
-| **DemoQA** | UI Components | Text box, checkbox, radio, web tables | `https://demoqa.com` |
+| Application         | Type                | Purpose                                   | Base URL                               |
+| ------------------- | ------------------- | ----------------------------------------- | -------------------------------------- |
+| **SauceDemo**       | E2E / Visual / a11y | E-commerce flow (login, cart, checkout)   | `https://www.saucedemo.com`            |
+| **Restful-Booker**  | API                 | REST API CRUD + auth                      | `https://restful-booker.herokuapp.com` |
+| **The Internet**    | UI Components       | Forms, dropdowns, dynamic loading, upload | `https://the-internet.herokuapp.com`   |
+| **JSONPlaceholder** | API                 | REST API (posts, users, albums, todos)    | `https://jsonplaceholder.typicode.com` |
+| **DemoQA**          | UI Components       | Text box, checkbox, radio, web tables     | `https://demoqa.com`                   |
 
 ## What You Get
 
-| Layer | Tool | Coverage |
-|-------|------|----------|
-| E2E, API, Visual | Playwright 1.60+ | Multi-browser (Chromium, Firefox, WebKit) |
-| Accessibility | axe-core via `@axe-core/playwright` | WCAG 2.1 AA |
-| Schema Validation | zod 4 | Test data & API responses |
-| Security Scan | OWASP ZAP | Baseline scan in CI |
-| Performance | Lighthouse CI | Core Web Vitals + a11y + SEO |
-| Static Analysis | CodeQL | GitHub native |
-| Secret Scanning | gitleaks | Pre-commit + CI |
-| Dependency Review | GitHub Dependabot | PR gate |
-| Pre-commit Gates | husky 9 + lint-staged | TypeScript, ESLint, Prettier |
+| Layer             | Tool                                | Coverage                                  |
+| ----------------- | ----------------------------------- | ----------------------------------------- |
+| E2E, API, Visual  | Playwright 1.60+                    | Multi-browser (Chromium, Firefox, WebKit) |
+| Accessibility     | axe-core via `@axe-core/playwright` | WCAG 2.1 AA                               |
+| Schema Validation | zod 4                               | Test data & API responses                 |
+| Security Scan     | OWASP ZAP                           | Baseline scan in CI                       |
+| Performance       | Lighthouse CI                       | Core Web Vitals + a11y + SEO              |
+| Static Analysis   | CodeQL                              | GitHub native                             |
+| Secret Scanning   | gitleaks                            | Pre-commit + CI                           |
+| Dependency Review | GitHub Dependabot                   | PR gate                                   |
+| Pre-commit Gates  | husky 9 + lint-staged               | TypeScript, ESLint, Prettier              |
 
 ## Quick Start
 
@@ -214,15 +214,15 @@ graph LR
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SAUCEDEMO_BASE_URL` | SauceDemo URL | `https://www.saucedemo.com` |
-| `SAUCEDEMO_USERNAME` | SauceDemo username | `standard_user` |
-| `SAUCEDEMO_PASSWORD` | SauceDemo password | `secret_sauce` |
-| `RESTFUL_BOOKER_BASE_URL` | Restful-Booker API | `https://restful-booker.herokuapp.com` |
-| `THE_INTERNET_BASE_URL` | The Internet | `https://the-internet.herokuapp.com` |
+| Variable                   | Description         | Default                                |
+| -------------------------- | ------------------- | -------------------------------------- |
+| `SAUCEDEMO_BASE_URL`       | SauceDemo URL       | `https://www.saucedemo.com`            |
+| `SAUCEDEMO_USERNAME`       | SauceDemo username  | `standard_user`                        |
+| `SAUCEDEMO_PASSWORD`       | SauceDemo password  | `secret_sauce`                         |
+| `RESTFUL_BOOKER_BASE_URL`  | Restful-Booker API  | `https://restful-booker.herokuapp.com` |
+| `THE_INTERNET_BASE_URL`    | The Internet        | `https://the-internet.herokuapp.com`   |
 | `JSONPLACEHOLDER_BASE_URL` | JSONPlaceholder API | `https://jsonplaceholder.typicode.com` |
-| `DEMOQA_BASE_URL` | DemoQA | `https://demoqa.com` |
+| `DEMOQA_BASE_URL`          | DemoQA              | `https://demoqa.com`                   |
 
 Set secrets in **GitHub Actions → Settings → Secrets** for CI.
 

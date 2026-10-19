@@ -27,10 +27,10 @@ test.describe('Feature Name', () => {
   test('@smoke Happy path description', async ({ pageObject }) => {
     // Arrange
     await pageObject.goto();
-    
+
     // Act
     await pageObject.performAction(data);
-    
+
     // Assert
     expect(await pageObject.getResult()).toBe(expected);
   });

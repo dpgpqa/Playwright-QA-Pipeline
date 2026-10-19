@@ -27,8 +27,10 @@ export async function waitForEnvironment(options: CheckOptions): Promise<boolean
     }
 
     const elapsed = Math.round((Date.now() - startTime) / 1000);
-    console.info(`Environment not ready yet (${elapsed}s elapsed), retrying in ${interval / 1000}s...`);
-    await new Promise((resolve) => setTimeout(resolve, interval));
+    console.info(
+      `Environment not ready yet (${elapsed}s elapsed), retrying in ${interval / 1000}s...`
+    );
+    await new Promise(resolve => setTimeout(resolve, interval));
   }
 
   await client.dispose();

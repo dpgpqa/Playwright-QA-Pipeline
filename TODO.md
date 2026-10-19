@@ -46,12 +46,14 @@ Use this checklist when adopting the template for your own app. Check off each i
 ## 🧪 Write Your Tests
 
 ### Smoke Tests (Critical Path)
+
 - [ ] Login / authentication
 - [ ] Primary user journey (e.g., purchase, create record, submit form)
 - [ ] Core API health checks
 - [ ] Target: < 2 min total, runs on every push
 
 ### Regression Tests (Full Coverage)
+
 - [ ] All CRUD operations
 - [ ] Edge cases (validation, errors, empty states)
 - [ ] Cross-browser (Chromium, Firefox, WebKit)
@@ -59,18 +61,21 @@ Use this checklist when adopting the template for your own app. Check off each i
 - [ ] Tag with `@regression`
 
 ### API Tests
+
 - [ ] Contract tests (schema validation)
 - [ ] Auth scenarios (valid, expired, invalid, missing)
 - [ ] Rate limiting / pagination / filtering
 - [ ] Tag with `@api`
 
 ### Accessibility Tests
+
 - [ ] `injectAxe(page)` in beforeEach
 - [ ] `checkA11y(page)` on key pages
 - [ ] Target: WCAG 2.1 AA
 - [ ] Tag with `@a11y`
 
 ### Visual Tests
+
 - [ ] Baseline screenshots per browser
 - [ ] Key pages: login, dashboard, forms, lists
 - [ ] Update via `npm run test:visual:update`

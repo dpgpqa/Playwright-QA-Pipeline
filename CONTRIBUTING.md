@@ -12,13 +12,13 @@ Thank you for contributing! This project follows a standard GitHub flow with bra
 
 ## Branch Naming
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Feature | `feat/short-description` | `feat/add-checkout-validation` |
-| Bug Fix | `fix/short-description` | `fix/login-flake` |
-| Refactor | `refactor/short-description` | `refactor/page-object-base` |
-| Docs | `docs/short-description` | `docs/update-getting-started` |
-| Chore | `chore/short-description` | `chore/update-dependencies` |
+| Type     | Pattern                      | Example                        |
+| -------- | ---------------------------- | ------------------------------ |
+| Feature  | `feat/short-description`     | `feat/add-checkout-validation` |
+| Bug Fix  | `fix/short-description`      | `fix/login-flake`              |
+| Refactor | `refactor/short-description` | `refactor/page-object-base`    |
+| Docs     | `docs/short-description`     | `docs/update-getting-started`  |
+| Chore    | `chore/short-description`    | `chore/update-dependencies`    |
 
 ## Commit Messages
 
@@ -35,6 +35,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `ci`
 
 Examples:
+
 ```
 feat(saucedemo): add checkout validation tests
 fix(api): handle 429 rate limit in RestfulBookerApi
@@ -54,18 +55,21 @@ chore(deps): upgrade playwright to 1.60
 ## Code Standards
 
 ### TypeScript
+
 - Strict mode enabled — no `any` without justification
 - Use `type` over `interface` for unions/intersections
 - Prefer `const` over `let`
 - Explicit return types for public functions
 
 ### Playwright
+
 - Follow POM patterns in `src/pages/`
 - Use fixtures from `base.fixture.ts`
 - Tag every test: `@smoke`, `@regression`, `@api`, `@a11y`, `@visual`
 - Prefer `getByRole` → `getByTestId` → `getByLabel` → `getByText` → `locator`
 
 ### Testing
+
 - **Smoke**: Critical path only, < 2 min total
 - **Regression**: Full coverage, can be slow
 - **API**: Contract + schema validation (zod)
@@ -73,6 +77,7 @@ chore(deps): upgrade playwright to 1.60
 - **Visual**: Per-browser baselines, update via `npm run test:visual:update`
 
 ### Linting & Formatting
+
 ```bash
 npm run lint        # Check
 npm run lint:fix    # Auto-fix

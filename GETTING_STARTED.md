@@ -84,17 +84,17 @@ git push -u origin main
 3. Set **Workflow permissions** to "Read and write permissions"
 4. Add secrets in **Settings → Secrets → Actions**:
 
-| Secret | Value |
-|--------|-------|
-| `SAUCEDEMO_BASE_URL` | Your app URL |
-| `SAUCEDEMO_USERNAME` | Test username |
-| `SAUCEDEMO_PASSWORD` | Test password |
-| `RESTFUL_BOOKER_BASE_URL` | Your API URL |
-| `THE_INTERNET_BASE_URL` | Your app URL |
-| `JSONPLACEHOLDER_BASE_URL` | Your API URL |
-| `DEMOQA_BASE_URL` | Your app URL |
-| `SLACK_WEBHOOK_URL` | (Optional) Slack alerts |
-| `LHCI_GITHUB_APP_TOKEN` | (Optional) Lighthouse CI |
+| Secret                     | Value                    |
+| -------------------------- | ------------------------ |
+| `SAUCEDEMO_BASE_URL`       | Your app URL             |
+| `SAUCEDEMO_USERNAME`       | Test username            |
+| `SAUCEDEMO_PASSWORD`       | Test password            |
+| `RESTFUL_BOOKER_BASE_URL`  | Your API URL             |
+| `THE_INTERNET_BASE_URL`    | Your app URL             |
+| `JSONPLACEHOLDER_BASE_URL` | Your API URL             |
+| `DEMOQA_BASE_URL`          | Your app URL             |
+| `SLACK_WEBHOOK_URL`        | (Optional) Slack alerts  |
+| `LHCI_GITHUB_APP_TOKEN`    | (Optional) Lighthouse CI |
 
 ## 8. Configure Branch Protection
 
@@ -147,6 +147,7 @@ test-data/           # Static JSON (zod-validated)
 ## Writing Your First Test
 
 1. **Create Page Object** in `src/pages/your-app/YourPage.ts`:
+
 ```typescript
 export class YourPage extends BasePage {
   protected readonly path = '/your-path';
@@ -164,6 +165,7 @@ export class YourPage extends BasePage {
 ```
 
 2. **Add fixture** in `src/fixtures/base.fixture.ts`:
+
 ```typescript
 yourPage: async ({ page }, use) => {
   await use(new YourPage(page));
@@ -171,6 +173,7 @@ yourPage: async ({ page }, use) => {
 ```
 
 3. **Write test** in `tests/your-app/feature.spec.ts`:
+
 ```typescript
 import { test, expect } from '@fixtures/base.fixture';
 
@@ -184,47 +187,52 @@ test.describe('Your Feature', () => {
 ```
 
 4. **Run it**:
+
 ```bash
 npm run test:smoke -- --grep "Your Feature"
 ```
 
 ## Common Commands
 
-| Task | Command |
-|------|---------|
-| Install deps | `npm install` |
-| Install browsers | `npx playwright install --with-deps` |
-| Run smoke | `npm run test:smoke` |
-| Run regression | `npm run test:regression` |
-| Run API tests | `npm run test:api` |
-| Run a11y | `npm run test:a11y` |
-| Run visual | `npm run test:visual` |
-| Update visual baselines | `npm run test:visual:update` |
-| Open report | `npm run report` |
-| Merge sharded reports | `npm run report:merge` |
-| TypeCheck | `npm run typecheck` |
-| Lint | `npm run lint` |
-| Format | `npm run format` |
-| Clean artifacts | `npm run clean` |
+| Task                    | Command                              |
+| ----------------------- | ------------------------------------ |
+| Install deps            | `npm install`                        |
+| Install browsers        | `npx playwright install --with-deps` |
+| Run smoke               | `npm run test:smoke`                 |
+| Run regression          | `npm run test:regression`            |
+| Run API tests           | `npm run test:api`                   |
+| Run a11y                | `npm run test:a11y`                  |
+| Run visual              | `npm run test:visual`                |
+| Update visual baselines | `npm run test:visual:update`         |
+| Open report             | `npm run report`                     |
+| Merge sharded reports   | `npm run report:merge`               |
+| TypeCheck               | `npm run typecheck`                  |
+| Lint                    | `npm run lint`                       |
+| Format                  | `npm run format`                     |
+| Clean artifacts         | `npm run clean`                      |
 
 ## Troubleshooting
 
 ### Tests fail on CI but pass locally
+
 - Check `BASE_URL` secrets are set in GitHub
 - Verify network access to target URLs
 - Increase timeouts in `playwright.config.ts`
 
 ### Visual tests fail
+
 - Run `npm run test:visual:update` to regenerate baselines
 - Ensure consistent browser versions (CI uses same Playwright version)
 - Check `maxDiffPixels` threshold in config
 
 ### Flaky tests
+
 - Use `expect.poll()` for async assertions
 - Add `test.slow()` for known-slow tests
 - Tag with `@quarantine` and handle in `docs/flake-handling.md`
 
 ### Auth issues
+
 - Worker-scoped auth stores state in `.auth/` (gitignored)
 - Run `npm run clean` to reset
 - Check `global.setup.ts` / `global.teardown.ts`

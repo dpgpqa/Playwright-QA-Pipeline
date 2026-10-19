@@ -26,13 +26,14 @@ npm run report
 ## CI Equivalent
 
 The `ci.yml` workflow runs:
+
 1. `lint-and-typecheck` (typecheck + eslint + prettier)
 2. `test-smoke` + `test-api` (sharded, parallel)
 3. `merge-smoke-report` (blob → HTML + JSON)
 4. `test-regression` (nightly + main, cross-browser)
 5. `test-accessibility` + `test-visual`
 6. `merge-reports` (all blob reports → single HTML)
-6. `notify` (Slack on failure)
+7. `notify` (Slack on failure)
 
 ## Local Debugging
 

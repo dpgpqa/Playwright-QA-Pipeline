@@ -16,17 +16,17 @@ Write a QA run report to `reports/runs/YYYY-MM-DD-<ticket>.md`.
 **Ticket:** [PROJ-123](https://jira.example.com/browse/PROJ-123)  
 **Environment:** staging  
 **Branch:** feat/PROJ-123-checkout-tests  
-**Commit:** abc1234  
+**Commit:** abc1234
 
 ## Test Summary
 
-| Layer | Tests | Passed | Failed | Skipped | Duration |
-|-------|-------|--------|--------|---------|----------|
-| @smoke | 4 | 4 | 0 | 0 | 45s |
-| @regression | 12 | 11 | 1 | 0 | 2m 30s |
-| @api | 8 | 8 | 0 | 0 | 1m 15s |
-| @a11y | 5 | 5 | 0 | 0 | 3m 20s |
-| @visual | 6 | 6 | 0 | 0 | 4m 10s |
+| Layer       | Tests | Passed | Failed | Skipped | Duration |
+| ----------- | ----- | ------ | ------ | ------- | -------- |
+| @smoke      | 4     | 4      | 0      | 0       | 45s      |
+| @regression | 12    | 11     | 1      | 0       | 2m 30s   |
+| @api        | 8     | 8      | 0      | 0       | 1m 15s   |
+| @a11y       | 5     | 5      | 0      | 0       | 3m 20s   |
+| @visual     | 6     | 6      | 0      | 0       | 4m 10s   |
 
 ## Failures
 
@@ -40,15 +40,15 @@ Write a QA run report to `reports/runs/YYYY-MM-DD-<ticket>.md`.
 
 ## Self-Heal Attempts
 
-| Test | Original Selector | Fixed Selector | Result |
-|------|-------------------|----------------|--------|
+| Test                  | Original Selector        | Fixed Selector              | Result   |
+| --------------------- | ------------------------ | --------------------------- | -------- |
 | Checkout invalid card | `locator('.card-input')` | `getByLabel('Card number')` | ✅ Fixed |
 
 ## Defects Created
 
-| Defect Key | Summary | Status |
-|------------|---------|--------|
-| QA-456 | [AUTO] Checkout fails with invalid card | Created |
+| Defect Key | Summary                                 | Status  |
+| ---------- | --------------------------------------- | ------- |
+| QA-456     | [AUTO] Checkout fails with invalid card | Created |
 
 ## Environment
 

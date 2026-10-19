@@ -55,6 +55,7 @@ Use skills/store-qa-memory to persist selector/flake patterns from PROJ-123 run
 ## Storage
 
 Stored in Claude's persistent memory for this project. Available in future sessions for:
+
 - Faster self-heal on similar failures
 - Consistent selector patterns across team
 - Environment-specific timing workarounds

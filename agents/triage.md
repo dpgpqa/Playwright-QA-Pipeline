@@ -20,13 +20,13 @@ Debug failing or flaky tests following the repo's flake-handling playbook.
 
 See `docs/flake-handling.md` for full taxonomy.
 
-| Symptom | Tool |
-|---------|------|
-| Assertion flakes — state takes time to converge | `expect.poll(...)` |
-| Test is just slow (large uploads, video, long flows) | `test.slow()` |
-| Known race condition, can't fix this sprint | `@quarantine` + ticket |
-| Test passes locally, fails in CI consistently | **Not flake** — env issue |
-| Test fails on retry but passes after a re-run | Real flake — investigate |
+| Symptom                                              | Tool                      |
+| ---------------------------------------------------- | ------------------------- |
+| Assertion flakes — state takes time to converge      | `expect.poll(...)`        |
+| Test is just slow (large uploads, video, long flows) | `test.slow()`             |
+| Known race condition, can't fix this sprint          | `@quarantine` + ticket    |
+| Test passes locally, fails in CI consistently        | **Not flake** — env issue |
+| Test fails on retry but passes after a re-run        | Real flake — investigate  |
 
 ## Self-Heal Attempt (One Only)
 
