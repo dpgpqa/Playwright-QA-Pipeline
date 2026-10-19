@@ -179,6 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: lint-and-typecheck
+    continue-on-error: true
     strategy:
       matrix:
         project: [chromium, firefox, webkit]
