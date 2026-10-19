@@ -201,6 +201,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-smoke, test-regression, test-api, test-accessibility, test-visual]
     if: always() && github.event_name != 'pull_request'
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -218,8 +219,14 @@ jobs:
           pattern: '*-report*'
           merge-multiple: true
       - name: Merge reports
-        run: npm run report:merge
+        run: |
+          if [ -d "blob-report" ] && [ "$(ls -A blob-report)" ]; then
+            npm run report:merge
+          else
+            echo "No reports to merge, skipping"
+          fi
       - name: Upload merged report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: merged-report
