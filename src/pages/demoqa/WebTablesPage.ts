@@ -113,4 +113,9 @@ export class WebTablesPage extends BasePage {
     await this.closeButton.click();
     await this.registrationForm.waitFor({ state: 'hidden' });
   }
+
+  async openModal(): Promise<void> {
+    await this.addButton.click();
+    await this.registrationForm.waitFor({ state: 'visible' });
+  }
 }

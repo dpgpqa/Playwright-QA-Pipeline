@@ -10,24 +10,24 @@ interface CheckOptions {
 export async function waitForEnvironment(options: CheckOptions): Promise<boolean> {
   const { url, timeout = 120000, interval = 5000, expectedStatus = 200 } = options;
   const startTime = Date.now();
-  const client = request.newContext();
+  const client = await request.newContext();
 
-  console.log(`Waiting for environment at ${url}...`);
+  console.info(`Waiting for environment at ${url}...`);
 
   while (Date.now() - startTime < timeout) {
     try {
       const response = await client.get(url);
       if (response.status() === expectedStatus) {
-        console.log(`Environment ready at ${url}`);
+        console.info(`Environment ready at ${url}`);
         await client.dispose();
         return true;
       }
-    } catch (error) {
+    } catch {
       // Ignore errors, keep retrying
     }
 
     const elapsed = Math.round((Date.now() - startTime) / 1000);
-    console.log(`Environment not ready yet (${elapsed}s elapsed), retrying in ${interval / 1000}s...`);
+    console.info(`Environment not ready yet (${elapsed}s elapsed), retrying in ${interval / 1000}s...`);
     await new Promise((resolve) => setTimeout(resolve, interval));
   }
 

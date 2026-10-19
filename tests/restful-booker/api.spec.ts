@@ -6,7 +6,7 @@ test.describe('Restful-Booker API Tests', () => {
 
   test.beforeAll(async () => {
     const baseURL = process.env.RESTFUL_BOOKER_BASE_URL ?? 'https://restful-booker.herokuapp.com';
-    api = new RestfulBookerApi(baseURL);
+    api = await RestfulBookerApi.create(baseURL);
     await api.authenticate('admin', 'password123');
   });
 
@@ -135,7 +135,7 @@ test.describe('Restful-Booker API Tests', () => {
   });
 
   test('@api Unauthorized operations fail', async () => {
-    const unauthApi = new RestfulBookerApi(process.env.RESTFUL_BOOKER_BASE_URL ?? 'https://restful-booker.herokuapp.com');
+    const unauthApi = await RestfulBookerApi.create(process.env.RESTFUL_BOOKER_BASE_URL ?? 'https://restful-booker.herokuapp.com');
     try {
       await unauthApi.createBooking({
         firstname: 'Test',

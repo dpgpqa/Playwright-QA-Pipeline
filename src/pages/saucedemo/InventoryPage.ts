@@ -15,6 +15,10 @@ export class InventoryPage extends BasePage {
     await this.inventoryList.waitFor({ state: 'visible' });
   }
 
+  async isLoaded(): Promise<boolean> {
+    return this.inventoryList.isVisible();
+  }
+
   async getItemNames(): Promise<string[]> {
     return this.page.locator('.inventory_item_name').allTextContents();
   }

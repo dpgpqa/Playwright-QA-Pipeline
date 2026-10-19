@@ -1,8 +1,8 @@
-import { FullConfig } from '@playwright/test';
+import type { FullConfig } from '@playwright/test';
 import { rmSync } from 'fs';
 import { join } from 'path';
 
-async function globalTeardown(config: FullConfig) {
+async function globalTeardown(_config: FullConfig) {
   // Clean up auth storage after CI runs
   if (process.env.CI) {
     const authDir = join(process.cwd(), '.auth');
@@ -13,7 +13,7 @@ async function globalTeardown(config: FullConfig) {
     }
   }
 
-  console.log('Global teardown completed');
+  console.info('Global teardown completed');
 }
 
 export default globalTeardown;

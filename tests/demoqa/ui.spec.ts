@@ -27,7 +27,7 @@ test.describe('DemoQA - UI Component Tests', () => {
     test('@regression Form validation - empty fields', async ({ textBoxPage }) => {
       await textBoxPage.submit();
       // Form should not submit with empty required fields
-      const output = await textBoxPage.page.locator('#output');
+      const output = await textBoxPage.getPage().locator('#output');
       await expect(output).toBeHidden();
     });
   });
@@ -106,7 +106,7 @@ test.describe('DemoQA - UI Component Tests', () => {
     });
 
     test('@regression No radio is disabled', async ({ radioButtonPage }) => {
-      const noRadio = radioButtonPage.page.locator('#noRadio');
+      const noRadio = radioButtonPage.getPage().locator('#noRadio');
       await expect(noRadio).toBeDisabled();
     });
   });
@@ -172,10 +172,10 @@ test.describe('DemoQA - UI Component Tests', () => {
     });
 
     test('@regression Close modal without submitting', async ({ webTablesPage }) => {
-      await webTablesPage.addButton.click();
-      await webTablesPage.registrationForm.waitFor({ state: 'visible' });
+      await webTablesPage.openModal();
+      await webTablesPage.getPage().locator('#registration-form-modal').waitFor({ state: 'visible' });
       await webTablesPage.closeModal();
-      await webTablesPage.registrationForm.waitFor({ state: 'hidden' });
+      await webTablesPage.getPage().locator('#registration-form-modal').waitFor({ state: 'hidden' });
     });
   });
 });

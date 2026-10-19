@@ -25,6 +25,10 @@ export class CheckoutInfoPage extends BasePage {
     await this.page.waitForURL('**/checkout-step-two.html');
   }
 
+  async clickContinue(): Promise<void> {
+    await this.continueButton.click();
+  }
+
   async cancel(): Promise<void> {
     await this.cancelButton.click();
     await this.page.waitForURL('**/cart.html');

@@ -1,0 +1,46 @@
+# Code Owners
+
+# Global
+* @diegozaito
+
+# QA Infrastructure
+/.github/workflows/ @diegozaito
+/playwright.config.ts @diegozaito
+/lighthouserc.yml @diegozaito
+/eslint.config.mjs @diegozaito
+/tsconfig.json @diegozaito
+/package.json @diegozaito
+/src/fixtures/ @diegozaito
+/src/utils/ @diegozaito
+/src/factories/ @diegozaito
+
+# Page Objects
+/src/pages/ @diegozaito
+
+# Components
+/src/components/ @diegozaito
+
+# API Clients
+/src/api/ @diegozaito
+
+# Tests
+/tests/smoke/ @diegozaito
+/tests/regression/ @diegozaito
+/tests/api/ @diegozaito
+/tests/accessibility/ @diegozaito
+/tests/visual/ @diegozaito
+
+# Agents & Skills
+/agents/ @diegozaito
+/skills/ @diegozaito
+/commands/ @diegozaito
+
+# Documentation
+/docs/ @diegozaito
+/CLAUDE.md @diegozaito
+/CONTRIBUTING.md @diegozaito
+/SECURITY.md @diegozaito
+
+# Security
+/.github/dependabot.yml @diegozaito
+/.zap/ @diegozaito

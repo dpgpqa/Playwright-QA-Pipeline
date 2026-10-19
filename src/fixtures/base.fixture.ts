@@ -1,4 +1,4 @@
-import { test as base, type Page } from '@playwright/test';
+import { test as base, type Page, type BrowserContext } from '@playwright/test';
 import { LoginPage } from '@pages/saucedemo/LoginPage';
 import { InventoryPage } from '@pages/saucedemo/InventoryPage';
 import { CartPage } from '@pages/saucedemo/CartPage';
@@ -15,6 +15,8 @@ import { TextBoxPage } from '@pages/demoqa/TextBoxPage';
 import { CheckBoxPage } from '@pages/demoqa/CheckBoxPage';
 import { RadioButtonPage } from '@pages/demoqa/RadioButtonPage';
 import { WebTablesPage } from '@pages/demoqa/WebTablesPage';
+import { mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
 
 type SauceDemoFixtures = {
   loginPage: LoginPage;
@@ -43,105 +45,135 @@ type DemoQAFixtures = {
 
 type WorkerFixtures = {
   authenticatedPage: Page;
+  freshContextPage: Page;
 };
 
-export const test = base.extend<SauceDemoFixtures & InternetFixtures & DemoQAFixtures & WorkerFixtures>({
-  // SauceDemo fixtures
+type AllFixtures = SauceDemoFixtures & InternetFixtures & DemoQAFixtures & WorkerFixtures;
+
+const extendedTest = base.extend<AllFixtures>({
   loginPage: async ({ page }, use) => {
-    const loginPage = new LoginPage(page);
-    await use(loginPage);
+    await use(new LoginPage(page));
   },
 
   inventoryPage: async ({ page }, use) => {
-    const inventoryPage = new InventoryPage(page);
-    await use(inventoryPage);
+    await use(new InventoryPage(page));
   },
 
   cartPage: async ({ page }, use) => {
-    const cartPage = new CartPage(page);
-    await use(cartPage);
+    await use(new CartPage(page));
   },
 
   checkoutInfoPage: async ({ page }, use) => {
-    const checkoutInfoPage = new CheckoutInfoPage(page);
-    await use(checkoutInfoPage);
+    await use(new CheckoutInfoPage(page));
   },
 
   checkoutOverviewPage: async ({ page }, use) => {
-    const checkoutOverviewPage = new CheckoutOverviewPage(page);
-    await use(checkoutOverviewPage);
+    await use(new CheckoutOverviewPage(page));
   },
 
   checkoutCompletePage: async ({ page }, use) => {
-    const checkoutCompletePage = new CheckoutCompletePage(page);
-    await use(checkoutCompletePage);
+    await use(new CheckoutCompletePage(page));
   },
 
   header: async ({ page }, use) => {
-    const header = new Header(page);
-    await use(header);
+    await use(new Header(page));
   },
 
-  // The Internet fixtures
   internetLoginPage: async ({ page }, use) => {
-    const internetLoginPage = new InternetLoginPage(page);
-    await use(internetLoginPage);
+    await use(new InternetLoginPage(page));
   },
 
   checkboxesPage: async ({ page }, use) => {
-    const checkboxesPage = new CheckboxesPage(page);
-    await use(checkboxesPage);
+    await use(new CheckboxesPage(page));
   },
 
   dropdownPage: async ({ page }, use) => {
-    const dropdownPage = new DropdownPage(page);
-    await use(dropdownPage);
+    await use(new DropdownPage(page));
   },
 
   dynamicLoadingPage: async ({ page }, use) => {
-    const dynamicLoadingPage = new DynamicLoadingPage(page);
-    await use(dynamicLoadingPage);
+    await use(new DynamicLoadingPage(page));
   },
 
   fileUploadPage: async ({ page }, use) => {
-    const fileUploadPage = new FileUploadPage(page);
-    await use(fileUploadPage);
+    await use(new FileUploadPage(page));
   },
 
-  // DemoQA fixtures
   textBoxPage: async ({ page }, use) => {
-    const textBoxPage = new TextBoxPage(page);
-    await use(textBoxPage);
+    await use(new TextBoxPage(page));
   },
 
   checkBoxPage: async ({ page }, use) => {
-    const checkBoxPage = new CheckBoxPage(page);
-    await use(checkBoxPage);
+    await use(new CheckBoxPage(page));
   },
 
   radioButtonPage: async ({ page }, use) => {
-    const radioButtonPage = new RadioButtonPage(page);
-    await use(radioButtonPage);
+    await use(new RadioButtonPage(page));
   },
 
   webTablesPage: async ({ page }, use) => {
-    const webTablesPage = new WebTablesPage(page);
-    await use(webTablesPage);
+    await use(new WebTablesPage(page));
   },
 
-  // Worker-scoped authenticated page (for SauceDemo)
-  authenticatedPage: async ({ browser }, use) => {
-    const context = await browser.newContext();
+  authenticatedPage: async ({ browser }, use, workerInfo) => {
+    const authDir = join(process.cwd(), '.auth');
+    const workerAuthFile = join(authDir, `user-${workerInfo.workerIndex}.json`);
+
+    if (!existsSync(authDir)) {
+      mkdirSync(authDir, { recursive: true });
+    }
+
+    let context: BrowserContext;
+    if (process.env.PW_KEEP_AUTH === '1' && existsSync(workerAuthFile)) {
+      context = await browser.newContext({ storageState: workerAuthFile });
+    } else {
+      context = await browser.newContext();
+      const page = await context.newPage();
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.loginAndWaitForInventory(
+        process.env.SAUCEDEMO_USERNAME ?? 'standard_user',
+        process.env.SAUCEDEMO_PASSWORD ?? 'secret_sauce'
+      );
+      await context.storageState({ path: workerAuthFile });
+    }
+
     const page = await context.newPage();
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.loginAndWaitForInventory(
-      process.env.SAUCEDEMO_USERNAME ?? 'standard_user',
-      process.env.SAUCEDEMO_PASSWORD ?? 'secret_sauce'
-    );
+    await use(page);
+    await context.close();
+  },
+
+  freshContextPage: async ({ browser }, use) => {
+    const context = await browser.newContext({ storageState: undefined });
+    const page = await context.newPage();
     await use(page);
     await context.close();
   },
 });
+
+const testWithReset = extendedTest.extend<{ page: Page }>({
+  page: async ({ page }, use, testInfo) => {
+    await use(page);
+
+    // Check if test uses authenticated fixtures by checking test title/tags
+    // This is a heuristic - tests using authenticatedPage typically have these tags
+    const usesAuth = testInfo.title.includes('@smoke') || 
+                     testInfo.title.includes('@regression') ||
+                     testInfo.title.includes('@api') ||
+                     testInfo.title.includes('@a11y') ||
+                     testInfo.title.includes('@visual');
+
+    if (usesAuth) {
+      try {
+        const header = new Header(page);
+        await header.resetAppState();
+      } catch {
+        // Ignore reset failures
+      }
+    }
+  },
+});
+
+export const test = testWithReset;
 
 export { expect } from '@playwright/test';

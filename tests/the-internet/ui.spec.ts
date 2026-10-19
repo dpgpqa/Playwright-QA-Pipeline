@@ -28,7 +28,7 @@ test.describe('The Internet - UI Component Tests', () => {
     test('@regression Logout works', async ({ internetLoginPage }) => {
       await internetLoginPage.login('tomsmith', 'SuperSecretPassword!');
       await internetLoginPage.logout();
-      expect(await internetLoginPage.page.url()).toContain('/login');
+      expect(await internetLoginPage.getPage().url()).toContain('/login');
     });
   });
 

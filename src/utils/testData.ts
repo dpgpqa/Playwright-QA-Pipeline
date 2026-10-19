@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { z } from 'zod';
+import type { z } from 'zod';
 
 export function loadTestData<T>(fileName: string, schema: z.ZodSchema<T>): T {
   const filePath = join(process.cwd(), 'test-data', fileName);

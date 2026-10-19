@@ -6,7 +6,7 @@ test.describe('JSONPlaceholder API Tests', () => {
 
   test.beforeAll(async () => {
     const baseURL = process.env.JSONPLACEHOLDER_BASE_URL ?? 'https://jsonplaceholder.typicode.com';
-    api = new JsonPlaceholderApi(baseURL);
+    api = await JsonPlaceholderApi.create(baseURL);
   });
 
   test.afterAll(async () => {

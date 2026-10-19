@@ -1,4 +1,4 @@
-import { Page, Response } from '@playwright/test';
+import type { Page, Response } from '@playwright/test';
 
 export abstract class BasePage {
   constructor(protected readonly page: Page) {}
@@ -19,5 +19,9 @@ export abstract class BasePage {
 
   async waitForURL(url: string | RegExp, options?: { timeout?: number }): Promise<void> {
     await this.page.waitForURL(url, options);
+  }
+
+  getPage(): Page {
+    return this.page;
   }
 }

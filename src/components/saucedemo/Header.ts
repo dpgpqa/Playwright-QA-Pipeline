@@ -1,14 +1,21 @@
-import { Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 export class Header {
-  constructor(private readonly page: Page) {}
+  private readonly menuButton: ReturnType<Page['getByTestId']>;
+  private readonly cartBadge: ReturnType<Page['getByTestId']>;
+  private readonly cartLink: ReturnType<Page['getByTestId']>;
+  private readonly logoutLink: ReturnType<Page['getByTestId']>;
+  private readonly resetLink: ReturnType<Page['getByTestId']>;
+  private readonly aboutLink: ReturnType<Page['getByTestId']>;
 
-  private readonly menuButton = this.page.getByTestId('open-menu');
-  private readonly cartBadge = this.page.getByTestId('shopping-cart-badge');
-  private readonly cartLink = this.page.getByTestId('shopping-cart-link');
-  private readonly logoutLink = this.page.getByTestId('logout-sidebar-link');
-  private readonly resetLink = this.page.getByTestId('reset-sidebar-link');
-  private readonly aboutLink = this.page.getByTestId('about-sidebar-link');
+  constructor(private readonly page: Page) {
+    this.menuButton = page.getByTestId('open-menu');
+    this.cartBadge = page.getByTestId('shopping-cart-badge');
+    this.cartLink = page.getByTestId('shopping-cart-link');
+    this.logoutLink = page.getByTestId('logout-sidebar-link');
+    this.resetLink = page.getByTestId('reset-sidebar-link');
+    this.aboutLink = page.getByTestId('about-sidebar-link');
+  }
 
   async getCartCount(): Promise<number> {
     const badge = await this.cartBadge.textContent();

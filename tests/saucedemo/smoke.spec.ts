@@ -7,8 +7,8 @@ test.describe('SauceDemo - Smoke Tests', () => {
 
   test('@smoke Standard user can login successfully', async ({ loginPage, inventoryPage }) => {
     await loginPage.loginAndWaitForInventory('standard_user', 'secret_sauce');
-    await expect(inventoryPage.page).toHaveURL(/.*inventory\.html/);
-    await expect(inventoryPage.inventoryList).toBeVisible();
+    await expect(inventoryPage.getPage()).toHaveURL(/.*inventory\.html/);
+    await expect(inventoryPage.isLoaded()).resolves.toBeTruthy();
   });
 
   test('@smoke Locked out user cannot login', async ({ loginPage }) => {
@@ -25,12 +25,12 @@ test.describe('SauceDemo - Smoke Tests', () => {
 
   test('@smoke Problem user can login but has UI issues', async ({ loginPage, inventoryPage }) => {
     await loginPage.loginAndWaitForInventory('problem_user', 'secret_sauce');
-    await expect(inventoryPage.page).toHaveURL(/.*inventory\.html/);
+    await expect(inventoryPage.getPage()).toHaveURL(/.*inventory\.html/);
   });
 });
 
 test.describe('SauceDemo - Cart Smoke Tests', () => {
-  test.beforeEach(async ({ loginPage, inventoryPage }) => {
+  test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAndWaitForInventory('standard_user', 'secret_sauce');
   });
@@ -49,7 +49,7 @@ test.describe('SauceDemo - Cart Smoke Tests', () => {
   test('@smoke Navigate to cart page', async ({ inventoryPage, cartPage }) => {
     await inventoryPage.addItemToCart('Sauce Labs Backpack');
     await inventoryPage.goToCart();
-    await expect(cartPage.page).toHaveURL(/.*cart\.html/);
+    await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
     const items = await cartPage.getCartItemNames();
     expect(items).toContain('Sauce Labs Backpack');
   });
@@ -74,7 +74,7 @@ test.describe('SauceDemo - Checkout Smoke Tests', () => {
     expect(total).toBeCloseTo(subtotal + tax, 2);
 
     await checkoutOverviewPage.finish();
-    await expect(checkoutCompletePage.page).toHaveURL(/.*checkout-complete\.html/);
+    await expect(checkoutCompletePage.getPage()).toHaveURL(/.*checkout-complete\.html/);
     expect(await checkoutCompletePage.isOrderComplete()).toBeTruthy();
   });
 });

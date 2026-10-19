@@ -1,4 +1,5 @@
-import { APIRequestContext, request } from '@playwright/test';
+import type { APIRequestContext} from '@playwright/test';
+import { request } from '@playwright/test';
 import { z } from 'zod';
 
 const AuthSchema = z.object({
@@ -26,8 +27,13 @@ export class RestfulBookerApi {
   private client: APIRequestContext;
   private token: string | null = null;
 
-  constructor(baseURL: string) {
-    this.client = request.newContext({ baseURL });
+  private constructor(client: APIRequestContext) {
+    this.client = client;
+  }
+
+  static async create(baseURL: string): Promise<RestfulBookerApi> {
+    const client = await request.newContext({ baseURL });
+    return new RestfulBookerApi(client);
   }
 
   async authenticate(username: string, password: string): Promise<string> {

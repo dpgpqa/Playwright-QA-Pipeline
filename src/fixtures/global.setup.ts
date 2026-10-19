@@ -1,8 +1,8 @@
-import { FullConfig } from '@playwright/test';
+import type { FullConfig } from '@playwright/test';
 import { mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(_config: FullConfig) {
   // Validate required environment variables
   const requiredEnvVars = ['SAUCEDEMO_BASE_URL'];
   for (const envVar of requiredEnvVars) {
@@ -31,7 +31,7 @@ async function globalSetup(config: FullConfig) {
     mkdirSync(join(process.cwd(), dir), { recursive: true });
   }
 
-  console.log('Global setup completed');
+  console.info('Global setup completed');
 }
 
 export default globalSetup;

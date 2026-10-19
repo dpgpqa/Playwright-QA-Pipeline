@@ -7,7 +7,7 @@ export class TextBoxPage extends BasePage {
   private readonly userEmail = this.page.locator('#userEmail');
   private readonly currentAddress = this.page.locator('#currentAddress');
   private readonly permanentAddress = this.page.locator('#permanentAddress');
-  private readonly submit = this.page.locator('#submit');
+  private readonly submitButton = this.page.locator('#submit');
   private readonly output = this.page.locator('#output');
   private readonly outputName = this.page.locator('#name');
   private readonly outputEmail = this.page.locator('#email');
@@ -31,7 +31,7 @@ export class TextBoxPage extends BasePage {
   }
 
   async submit(): Promise<void> {
-    await this.submit.click();
+    await this.submitButton.click();
   }
 
   async getOutput(): Promise<{

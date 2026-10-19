@@ -13,6 +13,10 @@ export class LoginPage extends BasePage {
     await this.logo.waitFor({ state: 'visible' });
   }
 
+  async isLogoVisible(): Promise<boolean> {
+    return this.logo.isVisible();
+  }
+
   async login(username: string, password: string): Promise<void> {
     await this.username.fill(username);
     await this.password.fill(password);

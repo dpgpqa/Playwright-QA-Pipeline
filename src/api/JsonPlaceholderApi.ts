@@ -1,4 +1,5 @@
-import { APIRequestContext, request } from '@playwright/test';
+import type { APIRequestContext} from '@playwright/test';
+import { request } from '@playwright/test';
 import { z } from 'zod';
 
 const PostSchema = z.object({
@@ -61,8 +62,13 @@ const TodoSchema = z.object({
 export class JsonPlaceholderApi {
   private client: APIRequestContext;
 
-  constructor(baseURL: string = 'https://jsonplaceholder.typicode.com') {
-    this.client = request.newContext({ baseURL });
+  private constructor(client: APIRequestContext) {
+    this.client = client;
+  }
+
+  static async create(baseURL: string = 'https://jsonplaceholder.typicode.com'): Promise<JsonPlaceholderApi> {
+    const client = await request.newContext({ baseURL });
+    return new JsonPlaceholderApi(client);
   }
 
   async getPosts(): Promise<z.infer<typeof PostSchema>[]> {

@@ -1,9 +1,20 @@
 import { test, expect } from '@fixtures/base.fixture';
 import { loadJsonFile } from '@utils/testData';
-import { products } from '@test-data/products.json';
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+}
+
+interface ProductsData {
+  saucedemo: Product[];
+}
 
 test.describe('SauceDemo - Regression Tests', () => {
-  const testProducts = loadJsonFile('products.json').saucedemo;
+  const testProducts = loadJsonFile<ProductsData>('products.json').saucedemo;
 
   test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
@@ -12,7 +23,7 @@ test.describe('SauceDemo - Regression Tests', () => {
 
   test('@regression All products displayed on inventory page', async ({ inventoryPage }) => {
     const displayedItems = await inventoryPage.getItemNames();
-    const expectedNames = testProducts.map((p) => p.name);
+    const expectedNames = testProducts.map((p: { name: string }) => p.name);
     for (const name of expectedNames) {
       expect(displayedItems).toContain(name);
     }
@@ -72,21 +83,21 @@ test.describe('SauceDemo - Regression Tests', () => {
 
   test('@regression Checkout validation - empty first name', async ({ checkoutInfoPage }) => {
     await checkoutInfoPage.fillInfo('', 'Doe', '12345');
-    await checkoutInfoPage.continueButton.click();
+    await checkoutInfoPage.clickContinue();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('First Name is required');
   });
 
   test('@regression Checkout validation - empty last name', async ({ checkoutInfoPage }) => {
     await checkoutInfoPage.fillInfo('John', '', '12345');
-    await checkoutInfoPage.continueButton.click();
+    await checkoutInfoPage.clickContinue();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('Last Name is required');
   });
 
   test('@regression Checkout validation - empty postal code', async ({ checkoutInfoPage }) => {
     await checkoutInfoPage.fillInfo('John', 'Doe', '');
-    await checkoutInfoPage.continueButton.click();
+    await checkoutInfoPage.clickContinue();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('Postal Code is required');
   });
@@ -97,7 +108,7 @@ test.describe('SauceDemo - Regression Tests', () => {
     await cartPage.proceedToCheckout();
 
     await checkoutInfoPage.cancel();
-    await expect(cartPage.page).toHaveURL(/.*cart\.html/);
+    await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
   });
 
   test('@regression Cancel overview returns to cart', async ({ inventoryPage, cartPage, checkoutInfoPage, checkoutOverviewPage }) => {
@@ -108,13 +119,13 @@ test.describe('SauceDemo - Regression Tests', () => {
     await checkoutInfoPage.continue();
 
     await checkoutOverviewPage.cancel();
-    await expect(cartPage.page).toHaveURL(/.*cart\.html/);
+    await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
   });
 
   test('@regression Menu logout works', async ({ inventoryPage, loginPage }) => {
     await inventoryPage.logout();
-    await expect(loginPage.page).toHaveURL(/.*\/$/);
-    await expect(loginPage.logo).toBeVisible();
+    await expect(loginPage.getPage()).toHaveURL(/.*\/$/);
+    await expect(loginPage.isLogoVisible()).resolves.toBeTruthy();
   });
 
   test('@regression Menu reset app state clears cart', async ({ inventoryPage, header }) => {
@@ -126,27 +137,26 @@ test.describe('SauceDemo - Regression Tests', () => {
   });
 
   test('@regression Product sort - Name A to Z', async ({ inventoryPage }) => {
-    await inventoryPage.page.locator('.product_sort_container').selectOption('az');
+    await inventoryPage.getPage().locator('.product_sort_container').selectOption('az');
     const names = await inventoryPage.getItemNames();
     const sorted = [...names].sort((a, b) => a.localeCompare(b));
     expect(names).toEqual(sorted);
   });
 
   test('@regression Product sort - Name Z to A', async ({ inventoryPage }) => {
-    await inventoryPage.page.locator('.product_sort_container').selectOption('za');
+    await inventoryPage.getPage().locator('.product_sort_container').selectOption('za');
     const names = await inventoryPage.getItemNames();
     const sorted = [...names].sort((a, b) => b.localeCompare(a));
     expect(names).toEqual(sorted);
   });
 
   test('@regression Product sort - Price low to high', async ({ inventoryPage }) => {
-    await inventoryPage.page.locator('.product_sort_container').selectOption('lohi');
-    // Would need to get prices and verify
-    await expect(inventoryPage.inventoryList).toBeVisible();
+    await inventoryPage.getPage().locator('.product_sort_container').selectOption('lohi');
+    await expect(inventoryPage.isLoaded()).resolves.toBeTruthy();
   });
 
   test('@regression Product sort - Price high to low', async ({ inventoryPage }) => {
-    await inventoryPage.page.locator('.product_sort_container').selectOption('hilo');
-    await expect(inventoryPage.inventoryList).toBeVisible();
+    await inventoryPage.getPage().locator('.product_sort_container').selectOption('hilo');
+    await expect(inventoryPage.isLoaded()).resolves.toBeTruthy();
   });
 });
