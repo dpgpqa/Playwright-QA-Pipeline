@@ -58,6 +58,7 @@ jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target' || github.event_name == 'merge_group'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,10 +111,16 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Start test server
-        run: cd test-server && npm start &
+        run: |
+          cd test-server && npm install && npm start &
+          sleep 15
         shell: bash
       - name: Wait for server
-        run: sleep 10 && curl -f http://localhost:3000/health
+        run: |
+          for i in $(seq 1 10); do
+            curl -sf http://localhost:3000/health && break
+            sleep 2
+          done
         shell: bash
 
       - name: Run ZAP Baseline Scan
