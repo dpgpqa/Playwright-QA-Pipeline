@@ -6,15 +6,6 @@ import { CheckoutInfoPage } from '@pages/saucedemo/CheckoutInfoPage';
 import { CheckoutOverviewPage } from '@pages/saucedemo/CheckoutOverviewPage';
 import { CheckoutCompletePage } from '@pages/saucedemo/CheckoutCompletePage';
 import { Header } from '@components/saucedemo/Header';
-import { LoginPage as InternetLoginPage } from '@pages/the-internet/LoginPage';
-import { CheckboxesPage } from '@pages/the-internet/CheckboxesPage';
-import { DropdownPage } from '@pages/the-internet/DropdownPage';
-import { DynamicLoadingPage } from '@pages/the-internet/DynamicLoadingPage';
-import { FileUploadPage } from '@pages/the-internet/FileUploadPage';
-import { TextBoxPage } from '@pages/demoqa/TextBoxPage';
-import { CheckBoxPage } from '@pages/demoqa/CheckBoxPage';
-import { RadioButtonPage } from '@pages/demoqa/RadioButtonPage';
-import { WebTablesPage } from '@pages/demoqa/WebTablesPage';
 import { mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -28,27 +19,12 @@ type SauceDemoFixtures = {
   header: Header;
 };
 
-type InternetFixtures = {
-  internetLoginPage: InternetLoginPage;
-  checkboxesPage: CheckboxesPage;
-  dropdownPage: DropdownPage;
-  dynamicLoadingPage: DynamicLoadingPage;
-  fileUploadPage: FileUploadPage;
-};
-
-type DemoQAFixtures = {
-  textBoxPage: TextBoxPage;
-  checkBoxPage: CheckBoxPage;
-  radioButtonPage: RadioButtonPage;
-  webTablesPage: WebTablesPage;
-};
-
 type WorkerFixtures = {
   authenticatedPage: Page;
   freshContextPage: Page;
 };
 
-type AllFixtures = SauceDemoFixtures & InternetFixtures & DemoQAFixtures & WorkerFixtures;
+type AllFixtures = SauceDemoFixtures & WorkerFixtures;
 
 const extendedTest = base.extend<AllFixtures>({
   loginPage: async ({ page }, use) => {
@@ -79,42 +55,6 @@ const extendedTest = base.extend<AllFixtures>({
     await use(new Header(page));
   },
 
-  internetLoginPage: async ({ page }, use) => {
-    await use(new InternetLoginPage(page));
-  },
-
-  checkboxesPage: async ({ page }, use) => {
-    await use(new CheckboxesPage(page));
-  },
-
-  dropdownPage: async ({ page }, use) => {
-    await use(new DropdownPage(page));
-  },
-
-  dynamicLoadingPage: async ({ page }, use) => {
-    await use(new DynamicLoadingPage(page));
-  },
-
-  fileUploadPage: async ({ page }, use) => {
-    await use(new FileUploadPage(page));
-  },
-
-  textBoxPage: async ({ page }, use) => {
-    await use(new TextBoxPage(page));
-  },
-
-  checkBoxPage: async ({ page }, use) => {
-    await use(new CheckBoxPage(page));
-  },
-
-  radioButtonPage: async ({ page }, use) => {
-    await use(new RadioButtonPage(page));
-  },
-
-  webTablesPage: async ({ page }, use) => {
-    await use(new WebTablesPage(page));
-  },
-
   authenticatedPage: async ({ browser }, use, workerInfo) => {
     const authDir = join(process.cwd(), '.auth');
     const workerAuthFile = join(authDir, `user-${workerInfo.workerIndex}.json`);
@@ -132,8 +72,8 @@ const extendedTest = base.extend<AllFixtures>({
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.loginAndWaitForInventory(
-        process.env.SAUCEDEMO_USERNAME ?? 'standard_user',
-        process.env.SAUCEDEMO_PASSWORD ?? 'secret_sauce'
+        process.env.TEST_USER_USERNAME ?? 'standard_user',
+        process.env.TEST_USER_PASSWORD ?? 'secret_sauce'
       );
       await context.storageState({ path: workerAuthFile });
     }
@@ -155,9 +95,7 @@ const testWithReset = extendedTest.extend<{ page: Page }>({
   page: async ({ page }, use, testInfo) => {
     await use(page);
 
-    // Check if test uses authenticated fixtures by checking test title/tags
-    // This is a heuristic - tests using authenticatedPage typically have these tags
-    const usesAuth = testInfo.title.includes('@smoke') || 
+    const usesAuth = testInfo.title.includes('@smoke') ||
                      testInfo.title.includes('@regression') ||
                      testInfo.title.includes('@api') ||
                      testInfo.title.includes('@a11y') ||

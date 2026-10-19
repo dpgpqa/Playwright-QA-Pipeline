@@ -3,9 +3,7 @@ ci:
     numberOfRuns: 3
     startServerCommand: 'npm run test:smoke &'
     url:
-      - '${SAUCEDEMO_BASE_URL:-https://www.saucedemo.com}'
-      - '${THE_INTERNET_BASE_URL:-https://the-internet.herokuapp.com}'
-      - '${DEMOQA_BASE_URL:-https://demoqa.com}'
+      - '${BASE_URL:-https://www.saucedemo.com}'
     settings:
       headless: true
       preset: 'desktop'

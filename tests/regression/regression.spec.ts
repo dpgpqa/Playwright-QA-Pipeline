@@ -23,7 +23,7 @@ test.describe('SauceDemo - Regression Tests', () => {
 
   test('@regression All products displayed on inventory page', async ({ inventoryPage }) => {
     const displayedItems = await inventoryPage.getItemNames();
-    const expectedNames = testProducts.map((p: { name: string }) => p.name);
+    const expectedNames = testProducts.map((p: Product) => p.name);
     for (const name of expectedNames) {
       expect(displayedItems).toContain(name);
     }
