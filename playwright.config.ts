@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 const isCI = !!process.env.CI;
-const baseURL = process.env.BASE_URL ?? (isCI ? 'http://localhost:3000' : 'https://www.saucedemo.com');
+const baseURL =
+  process.env.BASE_URL ?? (isCI ? 'http://localhost:3000' : 'https://www.saucedemo.com');
 
 export default defineConfig({
   testDir: './tests',
@@ -38,14 +39,16 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: isCI ? {
-    command: 'cd test-server && npm start',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !isCI,
-    timeout: 120_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  } : undefined,
+  webServer: isCI
+    ? {
+        command: 'cd test-server && npm start',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !isCI,
+        timeout: 120_000,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      }
+    : undefined,
   timeout: 60_000,
   expect: {
     timeout: 10_000,
