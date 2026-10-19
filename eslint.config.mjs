@@ -3,6 +3,7 @@ import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config(
+  { ignores: ['test-server/', 'node_modules/', 'dist/', 'test-results/', 'reports/', 'blob-report/', '.auth/', '.playwright/', 'coverage/', '*.log', '*.tmp', '*.temp', 'tmp/'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
