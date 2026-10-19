@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running pre-push checks..."
+
+# Run typecheck
+echo "Running typecheck..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+  echo "Typecheck failed. Push aborted."
+  exit 1
+fi
+
+# Run lint
+echo "Running lint..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "Lint failed. Push aborted."
+  exit 1
+fi
+
+# Run smoke tests
+echo "Running smoke tests..."
+npm run test:smoke
+if [ $? -ne 0 ]; then
+  echo "Smoke tests failed. Push aborted."
+  exit 1
+fi
+
+echo "All pre-push checks passed!"

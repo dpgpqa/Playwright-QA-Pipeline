@@ -1,0 +1,19 @@
+ci:
+  collect:
+    numberOfRuns: 3
+    startServerCommand: 'npm run test:smoke &'
+    url:
+      - '${SAUCEDEMO_BASE_URL:-https://www.saucedemo.com}'
+      - '${THE_INTERNET_BASE_URL:-https://the-internet.herokuapp.com}'
+      - '${DEMOQA_BASE_URL:-https://demoqa.com}'
+    settings:
+      headless: true
+      preset: 'desktop'
+  assert:
+    assertions:
+      categories:performance: ['error', {minScore: 0.5}]
+      categories:accessibility: ['error', {minScore: 0.9}]
+      categories:best-practices: ['error', {minScore: 0.8}]
+      categories:seo: ['warn', {minScore: 0.7}]
+  upload:
+    target: 'temporary-public-storage'

@@ -1,0 +1,58 @@
+{
+  "name": "playwright-qa-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise-grade QA Automation Portfolio — Playwright + TypeScript. Multi-target: SauceDemo (E2E), Restful-Booker (API), The Internet (UI), JSONPlaceholder (API), DemoQA (Components).",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke --project=chromium",
+    "test:regression": "playwright test --grep @regression --project=chromium",
+    "test:api": "playwright test tests/api/ --project=chromium",
+    "test:a11y": "playwright test --grep @a11y --project=chromium",
+    "test:visual": "playwright test --grep @visual --project=chromium",
+    "test:visual:update": "playwright test --grep @visual --project=chromium --update-snapshots",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed --project=chromium",
+    "test:saucedemo": "playwright test tests/saucedemo/ --project=chromium",
+    "test:restful-booker": "playwright test tests/restful-booker/ --project=chromium",
+    "test:the-internet": "playwright test tests/the-internet/ --project=chromium",
+    "test:jsonplaceholder": "playwright test tests/jsonplaceholder/ --project=chromium",
+    "test:demoqa": "playwright test tests/demoqa/ --project=chromium",
+    "report": "playwright show-report reports/html",
+    "report:merge": "playwright merge-reports --reporter=html ./blob-report",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,json,yml,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,yml,md}\"",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "clean": "rm -rf reports test-results blob-report .auth",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,yml,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^25.9.9",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "zod": "^4.6.7"
+  }
+}

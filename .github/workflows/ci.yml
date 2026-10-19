@@ -1,0 +1,268 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options: [staging, production]
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & TypeCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeCheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Format check
+        run: npm run format:check
+
+  test-smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run smoke tests
+        run: npm run test:smoke
+        env:
+          SAUCEDEMO_BASE_URL: ${{ secrets.SAUCEDEMO_BASE_URL }}
+          SAUCEDEMO_USERNAME: ${{ secrets.SAUCEDEMO_USERNAME }}
+          SAUCEDEMO_PASSWORD: ${{ secrets.SAUCEDEMO_PASSWORD }}
+          RESTFUL_BOOKER_BASE_URL: ${{ secrets.RESTFUL_BOOKER_BASE_URL }}
+          THE_INTERNET_BASE_URL: ${{ secrets.THE_INTERNET_BASE_URL }}
+          JSONPLACEHOLDER_BASE_URL: ${{ secrets.JSONPLACEHOLDER_BASE_URL }}
+          DEMOQA_BASE_URL: ${{ secrets.DEMOQA_BASE_URL }}
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: reports/html
+          retention-days: 7
+
+  test-regression:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: lint-and-typecheck
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        project: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps ${{ matrix.project }}
+      - name: Run regression tests
+        run: npm run test:regression -- --project=${{ matrix.project }}
+        env:
+          SAUCEDEMO_BASE_URL: ${{ secrets.SAUCEDEMO_BASE_URL }}
+          SAUCEDEMO_USERNAME: ${{ secrets.SAUCEDEMO_USERNAME }}
+          SAUCEDEMO_PASSWORD: ${{ secrets.SAUCEDEMO_PASSWORD }}
+          RESTFUL_BOOKER_BASE_URL: ${{ secrets.RESTFUL_BOOKER_BASE_URL }}
+          THE_INTERNET_BASE_URL: ${{ secrets.THE_INTERNET_BASE_URL }}
+          JSONPLACEHOLDER_BASE_URL: ${{ secrets.JSONPLACEHOLDER_BASE_URL }}
+          DEMOQA_BASE_URL: ${{ secrets.DEMOQA_BASE_URL }}
+      - name: Upload regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report-${{ matrix.project }}
+          path: reports/html
+          retention-days: 14
+
+  test-api:
+    name: API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run API tests
+        run: npm run test:api
+        env:
+          RESTFUL_BOOKER_BASE_URL: ${{ secrets.RESTFUL_BOOKER_BASE_URL }}
+          JSONPLACEHOLDER_BASE_URL: ${{ secrets.JSONPLACEHOLDER_BASE_URL }}
+      - name: Upload API report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-report
+          path: reports/html
+          retention-days: 14
+
+  test-accessibility:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run accessibility tests
+        run: npm run test:a11y
+        env:
+          SAUCEDEMO_BASE_URL: ${{ secrets.SAUCEDEMO_BASE_URL }}
+          THE_INTERNET_BASE_URL: ${{ secrets.THE_INTERNET_BASE_URL }}
+          DEMOQA_BASE_URL: ${{ secrets.DEMOQA_BASE_URL }}
+      - name: Upload a11y report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report
+          path: reports/html
+          retention-days: 14
+
+  test-visual:
+    name: Visual Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint-and-typecheck
+    strategy:
+      matrix:
+        project: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps ${{ matrix.project }}
+      - name: Run visual tests
+        run: npm run test:visual -- --project=${{ matrix.project }}
+        env:
+          SAUCEDEMO_BASE_URL: ${{ secrets.SAUCEDEMO_BASE_URL }}
+          THE_INTERNET_BASE_URL: ${{ secrets.THE_INTERNET_BASE_URL }}
+          DEMOQA_BASE_URL: ${{ secrets.DEMOQA_BASE_URL }}
+      - name: Upload visual report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-report-${{ matrix.project }}
+          path: reports/html
+          retention-days: 14
+
+  merge-reports:
+    name: Merge Reports
+    runs-on: ubuntu-latest
+    needs: [test-smoke, test-regression, test-api, test-accessibility, test-visual]
+    if: always() && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: blob-report
+          pattern: *-report*
+          merge-multiple: true
+      - name: Merge reports
+        run: npm run report:merge
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-report
+          path: reports/html
+          retention-days: 30
+
+  notify:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [test-smoke, test-regression, test-api, test-accessibility, test-visual]
+    if: failure() && github.event_name != 'pull_request'
+    steps:
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "QA Pipeline failed on ${{ github.repository }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*QA Pipeline Failed* \nRepository: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nRun: ${{ github.run_id }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

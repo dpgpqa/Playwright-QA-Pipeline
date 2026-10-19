@@ -1,0 +1,46 @@
+{
+  "saucedemo": {
+    "standard_user": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "description": "Standard user with full access"
+    },
+    "locked_out_user": {
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "description": "Locked out user"
+    },
+    "problem_user": {
+      "username": "problem_user",
+      "password": "secret_sauce",
+      "description": "User with UI issues"
+    },
+    "performance_glitch_user": {
+      "username": "performance_glitch_user",
+      "password": "secret_sauce",
+      "description": "User with performance issues"
+    },
+    "error_user": {
+      "username": "error_user",
+      "password": "secret_sauce",
+      "description": "User that triggers errors"
+    },
+    "visual_user": {
+      "username": "visual_user",
+      "password": "secret_sauce",
+      "description": "User for visual testing"
+    }
+  },
+  "restful_booker": {
+    "admin": {
+      "username": "admin",
+      "password": "password123"
+    }
+  },
+  "the_internet": {
+    "valid_user": {
+      "username": "tomsmith",
+      "password": "SuperSecretPassword!"
+    }
+  }
+}
