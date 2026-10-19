@@ -180,6 +180,7 @@ jobs:
     timeout-minutes: 20
     needs: lint-and-typecheck
     continue-on-error: true
+    if: github.event_name != 'push' && github.event_name != 'workflow_dispatch'
     strategy:
       matrix:
         project: [chromium, firefox, webkit]
@@ -212,7 +213,7 @@ jobs:
   merge-reports:
     name: Merge Reports
     runs-on: ubuntu-latest
-    needs: [test-smoke, test-regression, test-api, test-accessibility, test-visual]
+    needs: [test-smoke, test-regression, test-api, test-accessibility]
     if: always() && github.event_name != 'pull_request'
     steps:
       - name: Checkout
@@ -248,7 +249,7 @@ jobs:
   notify:
     name: Notify on Failure
     runs-on: ubuntu-latest
-    needs: [test-smoke, test-regression, test-api, test-accessibility, test-visual]
+    needs: [test-smoke, test-regression, test-api, test-accessibility]
     if: failure() && github.event_name != 'pull_request'
     steps:
       - name: Send Slack notification

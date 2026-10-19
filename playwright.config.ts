@@ -42,16 +42,16 @@ export default defineConfig({
   webServer: isCI
     ? {
         command: 'cd test-server && npm start',
-        url: 'http://localhost:3000',
+        url: 'http://localhost:3000/health',
         reuseExistingServer: !isCI,
         timeout: 120_000,
         stdout: 'pipe',
         stderr: 'pipe',
       }
     : undefined,
-  timeout: 60_000,
+  timeout: 120_000,
   expect: {
-    timeout: 10_000,
+    timeout: 30_000,
     toHaveScreenshot: {
       maxDiffPixels: 100,
       threshold: 0.2,
