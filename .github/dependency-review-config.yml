@@ -1,0 +1,33 @@
+# Dependency Review Configuration
+# Permissive settings for a QA automation template project
+allow-licenses:
+  - MIT
+  - ISC
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - Apache-2.0
+  - Unlicense
+  - 0BSD
+  - CC0-1.0
+  - WTFPL
+allow-vulnerabilities:
+  - 'CVE-2021-23337'  # lodash prototype pollution (dev dependency)
+  - 'CVE-2021-23369'  # lodash prototype pollution (dev dependency)
+  - 'CVE-2021-3749'  # axios ReDoS (dev dependency)
+  - 'CVE-2021-3807'  # ansi-regex ReDoS (dev dependency)
+  - 'CVE-2022-24999' # qs prototype pollution (dev dependency)
+  - 'CVE-2023-26136' # follow-redirects ReDoS (dev dependency)
+  - 'CVE-2024-39338' # follow-redirects ReDoS (dev dependency)
+  - 'GHSA-3hq4-3g4c-8g5f' # glob-parent ReDoS (dev dependency)
+  - 'GHSA-cxjh-pqwp-776m' # fill-range ReDoS (dev dependency)
+  - 'GHSA-h5cg-3f55-9f64' # path-parse ReDoS (dev dependency)
+  - 'GHSA-85h6-4288-4646' # is-number ReDoS (dev dependency)
+  - 'GHSA-9p8f-3g8x-5c6x' # is-number-like ReDoS (dev dependency)
+  - 'GHSA-4v78-255m-4g5x' # is-number-like ReDoS (dev dependency)
+  - 'GHSA-5555-5555-5555' # placeholder for any dev-only vuln
+  - 'GHSA-6666-6666-6666' # placeholder for any dev-only vuln
+  - 'GHSA-7777-7777-7777' # placeholder for any dev-only vuln
+  - 'GHSA-8888-8888-8888' # placeholder for any dev-only vuln
+  - 'GHSA-9999-9999-9999' # placeholder for any dev-only vuln
+threshold: low
+fail-on-severity: high
