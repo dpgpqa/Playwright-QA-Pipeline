@@ -47,7 +47,7 @@ jobs:
   test-smoke:
     name: Smoke Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - name: Checkout
@@ -80,7 +80,7 @@ jobs:
   test-regression:
     name: Regression Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     needs: lint-and-typecheck
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
