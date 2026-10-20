@@ -11,10 +11,10 @@ allow-licenses:
   - CC0-1.0
   - WTFPL
 allow-vulnerabilities:
-  - 'CVE-2021-23337'  # lodash prototype pollution (dev dependency)
-  - 'CVE-2021-23369'  # lodash prototype pollution (dev dependency)
-  - 'CVE-2021-3749'  # axios ReDoS (dev dependency)
-  - 'CVE-2021-3807'  # ansi-regex ReDoS (dev dependency)
+  - 'CVE-2021-23337' # lodash prototype pollution (dev dependency)
+  - 'CVE-2021-23369' # lodash prototype pollution (dev dependency)
+  - 'CVE-2021-3749' # axios ReDoS (dev dependency)
+  - 'CVE-2021-3807' # ansi-regex ReDoS (dev dependency)
   - 'CVE-2022-24999' # qs prototype pollution (dev dependency)
   - 'CVE-2023-26136' # follow-redirects ReDoS (dev dependency)
   - 'CVE-2024-39338' # follow-redirects ReDoS (dev dependency)
