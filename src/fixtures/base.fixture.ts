@@ -1,15 +1,17 @@
-import { test as base, type Page, type BrowserContext } from '@playwright/test';
-import { LoginPage } from '@pages/saucedemo/LoginPage';
-import { InventoryPage } from '@pages/saucedemo/InventoryPage';
-import { CartPage } from '@pages/saucedemo/CartPage';
-import { CheckoutInfoPage } from '@pages/saucedemo/CheckoutInfoPage';
-import { CheckoutOverviewPage } from '@pages/saucedemo/CheckoutOverviewPage';
-import { CheckoutCompletePage } from '@pages/saucedemo/CheckoutCompletePage';
-import { Header } from '@components/saucedemo/Header';
-import { mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
+import { test as base, selectors } from '@playwright/test';
+import type { Page, Browser } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+import { LoginPage } from '../pages/LoginPage';
+import { InventoryPage } from '../pages/InventoryPage';
+import { CartPage } from '../pages/CartPage';
+import { CheckoutInfoPage } from '../pages/CheckoutInfoPage';
+import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
+import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
+import { Header } from '../components/Header';
+import { getUser } from '../utils/testData';
 
-type SauceDemoFixtures = {
+type AppFixtures = {
   loginPage: LoginPage;
   inventoryPage: InventoryPage;
   cartPage: CartPage;
@@ -17,72 +19,82 @@ type SauceDemoFixtures = {
   checkoutOverviewPage: CheckoutOverviewPage;
   checkoutCompletePage: CheckoutCompletePage;
   header: Header;
-};
-
-type WorkerFixtures = {
-  authenticatedPage: Page;
   freshContextPage: Page;
 };
 
-type AllFixtures = SauceDemoFixtures & WorkerFixtures;
+type WorkerFixtures = {
+  workerStorageState: string;
+};
 
-const extendedTest = base.extend<AllFixtures>({
+/**
+ * Worker-scoped auth — each Playwright worker performs one login at startup and
+ * writes its own storage state file. Tests within a worker share that session;
+ * tests in different workers never share a session. This prevents the kind of
+ * cross-test session collisions you hit when one global `auth.json` is reused
+ * across many concurrent contexts (rate limits, sticky locks, CSRF nonces).
+ */
+export const test = base.extend<AppFixtures, WorkerFixtures>({
+  workerStorageState: [
+    async (
+      { browser }: { browser: Browser },
+      use: (arg: string) => Promise<void>,
+      workerInfo: {
+        workerIndex: number;
+        project: { use: { testIdAttribute?: string; baseURL?: string } };
+      }
+    ) => {
+      const file = path.resolve(process.cwd(), '.auth', `user-${workerInfo.workerIndex}.json`);
+      if (!fs.existsSync(file)) {
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        // Worker fixtures run before per-test setup applies use.testIdAttribute,
+        // so set it explicitly to match the project config.
+        const testIdAttribute = workerInfo.project.use.testIdAttribute;
+        if (testIdAttribute) selectors.setTestIdAttribute(testIdAttribute);
+        // newContext doesn't inherit `use.baseURL` from the project config,
+        // so we pass it explicitly so loginPage.goto('/') resolves correctly.
+        const context = await browser.newContext({
+          storageState: undefined,
+          baseURL: workerInfo.project.use.baseURL,
+        });
+        const page = await context.newPage();
+        const loginPage = new LoginPage(page);
+        const inventoryPage = new InventoryPage(page);
+        const user = getUser('standard');
+        await loginPage.goto();
+        await loginPage.loginAndWaitForInventory(user.username, user.password);
+        await inventoryPage.waitForLoad();
+        await context.storageState({ path: file });
+        await context.close();
+      }
+      await use(file);
+    },
+    { scope: 'worker' },
+  ],
+
+  // Override Playwright's built-in storageState option to point at the per-worker file.
+  storageState: ({ workerStorageState }, use) => use(workerStorageState),
+
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
-
   inventoryPage: async ({ page }, use) => {
     await use(new InventoryPage(page));
   },
-
   cartPage: async ({ page }, use) => {
     await use(new CartPage(page));
   },
-
   checkoutInfoPage: async ({ page }, use) => {
     await use(new CheckoutInfoPage(page));
   },
-
   checkoutOverviewPage: async ({ page }, use) => {
     await use(new CheckoutOverviewPage(page));
   },
-
   checkoutCompletePage: async ({ page }, use) => {
     await use(new CheckoutCompletePage(page));
   },
-
   header: async ({ page }, use) => {
     await use(new Header(page));
   },
-
-  authenticatedPage: async ({ browser }, use, workerInfo) => {
-    const authDir = join(process.cwd(), '.auth');
-    const workerAuthFile = join(authDir, `user-${workerInfo.workerIndex}.json`);
-
-    if (!existsSync(authDir)) {
-      mkdirSync(authDir, { recursive: true });
-    }
-
-    let context: BrowserContext;
-    if (process.env.PW_KEEP_AUTH === '1' && existsSync(workerAuthFile)) {
-      context = await browser.newContext({ storageState: workerAuthFile });
-    } else {
-      context = await browser.newContext();
-      const page = await context.newPage();
-      const loginPage = new LoginPage(page);
-      await loginPage.goto();
-      await loginPage.loginAndWaitForInventory(
-        process.env.TEST_USER_USERNAME ?? 'standard_user',
-        process.env.TEST_USER_PASSWORD ?? 'secret_sauce'
-      );
-      await context.storageState({ path: workerAuthFile });
-    }
-
-    const page = await context.newPage();
-    await use(page);
-    await context.close();
-  },
-
   freshContextPage: async ({ browser }, use) => {
     const context = await browser.newContext({ storageState: undefined });
     const page = await context.newPage();
@@ -90,29 +102,5 @@ const extendedTest = base.extend<AllFixtures>({
     await context.close();
   },
 });
-
-const testWithReset = extendedTest.extend<{ page: Page }>({
-  page: async ({ page }, use, testInfo) => {
-    await use(page);
-
-    const usesAuth =
-      testInfo.title.includes('@smoke') ||
-      testInfo.title.includes('@regression') ||
-      testInfo.title.includes('@api') ||
-      testInfo.title.includes('@a11y') ||
-      testInfo.title.includes('@visual');
-
-    if (usesAuth) {
-      try {
-        const header = new Header(page);
-        await header.resetAppState();
-      } catch {
-        // Ignore reset failures
-      }
-    }
-  },
-});
-
-export const test = testWithReset;
 
 export { expect } from '@playwright/test';

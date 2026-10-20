@@ -1,46 +1,29 @@
 {
-  "saucedemo": {
-    "standard_user": {
+  "$schema": "./users.schema.json",
+  "users": {
+    "standard": {
       "username": "standard_user",
-      "password": "secret_sauce",
-      "description": "Standard user with full access"
+      "description": "Normal user — full flow works"
     },
-    "locked_out_user": {
+    "lockedOut": {
       "username": "locked_out_user",
-      "password": "secret_sauce",
-      "description": "Locked out user"
+      "description": "Cannot log in — used to validate the locked-account error path"
     },
-    "problem_user": {
+    "problem": {
       "username": "problem_user",
-      "password": "secret_sauce",
-      "description": "User with UI issues"
+      "description": "Renders broken UI — useful for visual/a11y diff tests"
     },
-    "performance_glitch_user": {
+    "performanceGlitch": {
       "username": "performance_glitch_user",
-      "password": "secret_sauce",
-      "description": "User with performance issues"
+      "description": "Slow responses — used to validate explicit waits"
     },
-    "error_user": {
+    "error": {
       "username": "error_user",
-      "password": "secret_sauce",
-      "description": "User that triggers errors"
+      "description": "Backend errors on specific actions"
     },
-    "visual_user": {
+    "visual": {
       "username": "visual_user",
-      "password": "secret_sauce",
-      "description": "User for visual testing"
-    }
-  },
-  "restful_booker": {
-    "admin": {
-      "username": "admin",
-      "password": "password123"
-    }
-  },
-  "the_internet": {
-    "valid_user": {
-      "username": "tomsmith",
-      "password": "SuperSecretPassword!"
+      "description": "Visual differences — for screenshot regression demos"
     }
   }
 }

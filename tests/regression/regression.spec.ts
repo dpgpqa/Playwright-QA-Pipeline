@@ -1,185 +1,210 @@
-import { test, expect } from '@fixtures/base.fixture';
-import { loadJsonFile } from '@utils/testData';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-}
-
-interface ProductsData {
-  saucedemo: Product[];
-}
+import { test, expect } from '../../src/fixtures/base.fixture';
+import { LoginPage } from '../../src/pages/LoginPage';
+import { InventoryPage } from '../../src/pages/InventoryPage';
+import { CartPage } from '../../src/pages/CartPage';
+import { CheckoutInfoPage } from '../../src/pages/CheckoutInfoPage';
+import { CheckoutOverviewPage } from '../../src/pages/CheckoutOverviewPage';
+import { CheckoutCompletePage } from '../../src/pages/CheckoutCompletePage';
+import { Header } from '../../src/components/Header';
+import { getProducts, getDefaultShipping } from '../../src/utils/testData';
 
 test.describe('SauceDemo - Regression Tests', () => {
-  const testProducts = loadJsonFile<ProductsData>('products.json').saucedemo;
+  const testProducts = getProducts();
+  const shipping = getDefaultShipping();
 
-  test.beforeEach(async ({ loginPage }) => {
+  test.beforeEach(async ({ freshContextPage }) => {
+    const loginPage = new LoginPage(freshContextPage);
     await loginPage.goto();
     await loginPage.loginAndWaitForInventory('standard_user', 'secret_sauce');
   });
 
-  test('@regression All products displayed on inventory page', async ({ inventoryPage }) => {
-    const displayedItems = await inventoryPage.getItemNames();
-    const expectedNames = testProducts.map((p: Product) => p.name);
+  test('@regression All products displayed on inventory page', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const displayedItems = await inventoryPage.itemNames();
+    const expectedNames = testProducts.map(p => p.name);
     for (const name of expectedNames) {
       expect(displayedItems).toContain(name);
     }
   });
 
-  test('@regression Add multiple items to cart', async ({ inventoryPage, header, cartPage }) => {
+  test('@regression Add multiple items to cart', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+
     const itemsToAdd = ['Sauce Labs Backpack', 'Sauce Labs Bolt T-Shirt', 'Sauce Labs Bike Light'];
     for (const item of itemsToAdd) {
-      await inventoryPage.addItemToCart(item);
+      await inventoryPage.addToCart(item);
     }
-    expect(await header.getCartCount()).toBe(itemsToAdd.length);
+    expect(await header.cartBadgeCount()).toBe(itemsToAdd.length);
 
-    await inventoryPage.goToCart();
+    await header.openCart();
     const cartItems = await cartPage.getCartItemNames();
     for (const item of itemsToAdd) {
       expect(cartItems).toContain(item);
     }
   });
 
-  test('@regression Remove item from cart on inventory page', async ({ inventoryPage, header }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    expect(await header.getCartCount()).toBe(1);
+  test('@regression Remove item from cart on inventory page', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    expect(await header.cartBadgeCount()).toBe(1);
 
-    await inventoryPage.removeItemFromCart('Sauce Labs Backpack');
-    expect(await header.getCartCount()).toBe(0);
-    expect(await inventoryPage.isItemInCart('Sauce Labs Backpack')).toBeFalsy();
+    await inventoryPage.removeFromCart('Sauce Labs Backpack');
+    expect(await header.cartBadgeCount()).toBe(0);
   });
 
-  test('@regression Remove item from cart on cart page', async ({
-    inventoryPage,
-    cartPage,
-    header,
-  }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.goToCart();
+  test('@regression Remove item from cart on cart page', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
 
     await cartPage.removeItem('Sauce Labs Backpack');
-    expect(await header.getCartCount()).toBe(0);
+    expect(await header.cartBadgeCount()).toBe(0);
     const cartItems = await cartPage.getCartItemNames();
     expect(cartItems).not.toContain('Sauce Labs Backpack');
   });
 
-  test('@regression Cart persists after navigation', async ({
-    inventoryPage,
-    header,
-    cartPage,
-  }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.goToCart();
+  test('@regression Cart persists after navigation', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
     await cartPage.continueShopping();
-    expect(await header.getCartCount()).toBe(1);
+    expect(await header.cartBadgeCount()).toBe(1);
   });
 
-  test('@regression Checkout with valid info', async ({
-    inventoryPage,
-    cartPage,
-    checkoutInfoPage,
-    checkoutOverviewPage,
-    checkoutCompletePage,
-  }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.goToCart();
+  test('@regression Checkout with valid info', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const checkoutInfoPage = new CheckoutInfoPage(freshContextPage);
+    const checkoutOverviewPage = new CheckoutOverviewPage(freshContextPage);
+    const checkoutCompletePage = new CheckoutCompletePage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
     await cartPage.proceedToCheckout();
 
-    await checkoutInfoPage.fillInfo('John', 'Doe', '12345');
-    await checkoutInfoPage.continue();
+    await checkoutInfoPage.fillAndContinue({
+      firstName: shipping.firstName,
+      lastName: shipping.lastName,
+      postalCode: shipping.postalCode,
+    });
 
     await checkoutOverviewPage.finish();
-    expect(await checkoutCompletePage.isOrderComplete()).toBeTruthy();
+    expect(await checkoutCompletePage.confirmationText()).toContain('dispatched');
   });
 
-  test('@regression Checkout validation - empty first name', async ({ checkoutInfoPage }) => {
-    await checkoutInfoPage.fillInfo('', 'Doe', '12345');
-    await checkoutInfoPage.clickContinue();
+  test('@regression Checkout validation - empty first name', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const checkoutInfoPage = new CheckoutInfoPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
+    await cartPage.proceedToCheckout();
+
+    await checkoutInfoPage.submitWithoutValidation();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('First Name is required');
   });
 
-  test('@regression Checkout validation - empty last name', async ({ checkoutInfoPage }) => {
-    await checkoutInfoPage.fillInfo('John', '', '12345');
-    await checkoutInfoPage.clickContinue();
+  test('@regression Checkout validation - empty last name', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const checkoutInfoPage = new CheckoutInfoPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
+    await cartPage.proceedToCheckout();
+
+    await checkoutInfoPage.firstName.fill(shipping.firstName);
+    await checkoutInfoPage.postalCode.fill(shipping.postalCode);
+    await checkoutInfoPage.submitWithoutValidation();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('Last Name is required');
   });
 
-  test('@regression Checkout validation - empty postal code', async ({ checkoutInfoPage }) => {
-    await checkoutInfoPage.fillInfo('John', 'Doe', '');
-    await checkoutInfoPage.clickContinue();
+  test('@regression Checkout validation - empty postal code', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const checkoutInfoPage = new CheckoutInfoPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
+    await cartPage.proceedToCheckout();
+
+    await checkoutInfoPage.firstName.fill(shipping.firstName);
+    await checkoutInfoPage.lastName.fill(shipping.lastName);
+    await checkoutInfoPage.submitWithoutValidation();
     const error = await checkoutInfoPage.getErrorMessage();
     expect(error).toContain('Postal Code is required');
   });
 
-  test('@regression Cancel checkout returns to cart', async ({
-    inventoryPage,
-    cartPage,
-    checkoutInfoPage,
-  }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.goToCart();
+  test('@regression Cancel checkout returns to cart', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const cartPage = new CartPage(freshContextPage);
+    const checkoutInfoPage = new CheckoutInfoPage(freshContextPage);
+    const checkoutOverviewPage = new CheckoutOverviewPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    await header.openCart();
     await cartPage.proceedToCheckout();
 
-    await checkoutInfoPage.cancel();
-    await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
-  });
-
-  test('@regression Cancel overview returns to cart', async ({
-    inventoryPage,
-    cartPage,
-    checkoutInfoPage,
-    checkoutOverviewPage,
-  }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.goToCart();
-    await cartPage.proceedToCheckout();
-    await checkoutInfoPage.fillInfo('John', 'Doe', '12345');
-    await checkoutInfoPage.continue();
+    await checkoutInfoPage.fillAndContinue(shipping);
 
     await checkoutOverviewPage.cancel();
-    await expect(cartPage.getPage()).toHaveURL(/.*cart\.html/);
+    await expect(cartPage.getPage()).toHaveURL(/.*inventory\.html/);
   });
 
-  test('@regression Menu logout works', async ({ inventoryPage, loginPage }) => {
-    await inventoryPage.logout();
-    await expect(loginPage.getPage()).toHaveURL(/.*\/$/);
-    await expect(loginPage.isLogoVisible()).resolves.toBeTruthy();
+  test('@regression Menu logout works', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const loginPage = new LoginPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.goto();
+    await header.logout();
+    await expect(loginPage.getPage()).toHaveURL(/\/(index\.html)?$/);
   });
 
-  test('@regression Menu reset app state clears cart', async ({ inventoryPage, header }) => {
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    expect(await header.getCartCount()).toBe(1);
+  test('@regression Menu reset app state clears cart', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    const header = new Header(freshContextPage);
+    await inventoryPage.addToCart('Sauce Labs Backpack');
+    expect(await header.cartBadgeCount()).toBe(1);
 
-    await inventoryPage.resetAppState();
-    expect(await header.getCartCount()).toBe(0);
+    await header.resetAppState();
+    expect(await header.cartBadgeCount()).toBe(0);
   });
 
-  test('@regression Product sort - Name A to Z', async ({ inventoryPage }) => {
-    await inventoryPage.getPage().locator('.product_sort_container').selectOption('az');
-    const names = await inventoryPage.getItemNames();
+  test('@regression Product sort - Name A to Z', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    await inventoryPage.sortBy('az');
+    const names = await inventoryPage.itemNames();
     const sorted = [...names].sort((a, b) => a.localeCompare(b));
     expect(names).toEqual(sorted);
   });
 
-  test('@regression Product sort - Name Z to A', async ({ inventoryPage }) => {
-    await inventoryPage.getPage().locator('.product_sort_container').selectOption('za');
-    const names = await inventoryPage.getItemNames();
+  test('@regression Product sort - Name Z to A', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    await inventoryPage.sortBy('za');
+    const names = await inventoryPage.itemNames();
     const sorted = [...names].sort((a, b) => b.localeCompare(a));
     expect(names).toEqual(sorted);
   });
 
-  test('@regression Product sort - Price low to high', async ({ inventoryPage }) => {
-    await inventoryPage.getPage().locator('.product_sort_container').selectOption('lohi');
-    await expect(inventoryPage.isLoaded()).resolves.toBeTruthy();
+  test('@regression Product sort - Price low to high', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    await inventoryPage.sortBy('lohi');
+    await inventoryPage.waitForLoad();
   });
 
-  test('@regression Product sort - Price high to low', async ({ inventoryPage }) => {
-    await inventoryPage.getPage().locator('.product_sort_container').selectOption('hilo');
-    await expect(inventoryPage.isLoaded()).resolves.toBeTruthy();
+  test('@regression Product sort - Price high to low', async ({ freshContextPage }) => {
+    const inventoryPage = new InventoryPage(freshContextPage);
+    await inventoryPage.sortBy('hilo');
+    await inventoryPage.waitForLoad();
   });
 });

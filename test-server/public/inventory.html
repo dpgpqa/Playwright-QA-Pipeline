@@ -52,24 +52,24 @@
 
   <div class="overlay" id="overlay"></div>
   <div class="menu" id="menu">
-    <button class="menu-close" id="menu-close">&times;</button>
+    <button class="menu-close" id="menu-close" data-test="close-menu">&times;</button>
     <a href="#" id="menu-all-items" class="menu-item" data-test="all-items">All Items</a>
     <a href="#" id="menu-about" class="menu-item" data-test="about">About</a>
-    <a href="#" id="menu-logout" class="menu-item" data-test="logout">Logout</a>
-    <a href="#" id="menu-reset" class="menu-item" data-test="reset">Reset App State</a>
+    <a href="#" id="menu-logout" class="menu-item" data-test="logout-sidebar-link">Logout</a>
+    <a href="#" id="menu-reset" class="menu-item" data-test="reset-sidebar-link">Reset App State</a>
   </div>
 
   <div class="container">
     <div class="inventory-header">
-      <h2>Products</h2>
-      <select class="sort-select" id="sort-select" data-test="product-sort">
+      <h2 data-test="title">Products</h2>
+      <select class="sort-select" id="sort-select" data-test="product-sort-container">
         <option value="az">Name (A to Z)</option>
         <option value="za">Name (Z to A)</option>
         <option value="lohi">Price (low to high)</option>
         <option value="hilo">Price (high to low)</option>
       </select>
     </div>
-    <div class="inventory-list" id="inventory-list"></div>
+    <div class="inventory-list" id="inventory-list" data-test="inventory-list"></div>
   </div>
 
   <script>
@@ -85,12 +85,12 @@
     function renderProducts(list) {
       const container = document.getElementById('inventory-list');
       container.innerHTML = list.map(p => `
-        <div class="inventory-item" data-id="${p.id}">
+        <div class="inventory-item" data-id="${p.id}" data-test="inventory-item">
           <img src="${p.img}" alt="${p.name}" class="item-img" onerror="this.src='https://via.placeholder.com/300x150/3ddc91/fff?text=${encodeURIComponent(p.name)}'">
-          <div class="item-name" class="inventory_item_name">${p.name}</div>
+          <div class="item-name" data-test="inventory-item-name">${p.name}</div>
           <div class="item-desc">${p.desc}</div>
           <div class="item-footer">
-            <span class="item-price">$${p.price.toFixed(2)}</span>
+            <span class="item-price" data-test="inventory-item-price">$${p.price.toFixed(2)}</span>
             <button class="btn btn-primary" data-test="add-to-cart-${p.id}" onclick="addToCart('${p.id}')">Add to cart</button>
           </div>
         </div>
@@ -98,7 +98,7 @@
     }
 
     function updateCartBadge() {
-      fetch('/api/cart')
+      fetch('/api/cart', { credentials: 'include' })
         .then(r => r.json())
         .then(data => {
           document.getElementById('cart-badge').textContent = data.count;
@@ -109,6 +109,7 @@
       fetch('/api/cart/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ itemId: id })
       }).then(() => updateCartBadge());
     }
@@ -117,6 +118,7 @@
       fetch('/api/cart/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ itemId: id })
       }).then(() => {
         updateCartBadge();
