@@ -33,9 +33,6 @@ jobs:
         run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          SAUCEDEMO_BASE_URL: ${{ secrets.SAUCEDEMO_BASE_URL }}
-          THE_INTERNET_BASE_URL: ${{ secrets.THE_INTERNET_BASE_URL }}
-          DEMOQA_BASE_URL: ${{ secrets.DEMOQA_BASE_URL }}
 
       - name: Upload Lighthouse Report
         if: always()
