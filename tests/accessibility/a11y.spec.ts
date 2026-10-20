@@ -1,10 +1,10 @@
-import { test } from '@playwright/test';
+import { test } from '../../src/fixtures/base.fixture';
 import { AxeBuilder } from '@axe-core/playwright';
 
 test.describe('Accessibility Tests', () => {
   test.describe('SauceDemo', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto(process.env.BASE_URL ?? 'https://www.saucedemo.com');
+      await page.goto('/');
     });
 
     test('@a11y Login page - WCAG 2.1 AA', async ({ page }) => {

@@ -1,34 +1,61 @@
 import { defineConfig, devices } from '@playwright/test';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
 const isCI = !!process.env.CI;
-const baseURL =
-  process.env.BASE_URL ?? (isCI ? 'http://localhost:3000' : 'https://www.saucedemo.com');
+// Optional: run against the system-installed Chrome instead of Playwright's
+// bundled chromium. Useful on host OSes where Playwright has no prebuilt binary.
+const chromeChannel = process.env.PW_CHROMIUM_CHANNEL || undefined;
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './src/fixtures/global.setup.ts',
+  globalTeardown: './src/fixtures/global.teardown.ts',
+
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
-  reporter: [
-    ['html', { outputFolder: 'reports/html', open: 'never' }],
-    ['github'],
-    ['json', { outputFile: 'reports/results.json' }],
-  ],
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 4 : undefined,
+  timeout: 30_000,
+  expect: { timeout: 5_000 },
+
+  reporter: isCI
+    ? [
+        ['blob', { outputDir: 'blob-report' }],
+        ['github'],
+        ['json', { outputFile: 'reports/results.json' }],
+      ]
+    : [
+        ['html', { outputFolder: 'reports/html', open: 'never' }],
+        ['list'],
+        ['json', { outputFile: 'reports/results.json' }],
+      ],
+
   use: {
-    baseURL,
+    baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: process.env.PW_DISABLE_VIDEO ? 'off' : 'retain-on-failure',
     testIdAttribute: 'data-test',
+    actionTimeout: 10_000,
+    navigationTimeout: 15_000,
+    ignoreHTTPSErrors: false,
+    extraHTTPHeaders: {
+      'X-Test-Run': process.env.GITHUB_RUN_ID || 'local',
+    },
   },
+
+  // Storage state is provided by the per-worker `storageState` fixture in
+  // src/fixtures/base.fixture.ts — each worker logs in once and isolates
+  // its session from other workers.
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(chromeChannel ? { channel: chromeChannel } : {}),
+      },
     },
     {
       name: 'firefox',
@@ -39,25 +66,4 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: isCI
-    ? {
-        command: 'cd test-server && npm start',
-        url: 'http://localhost:3000/health',
-        reuseExistingServer: !isCI,
-        timeout: 120_000,
-        stdout: 'pipe',
-        stderr: 'pipe',
-      }
-    : undefined,
-  timeout: 120_000,
-  expect: {
-    timeout: 30_000,
-    toHaveScreenshot: {
-      maxDiffPixels: 100,
-      threshold: 0.2,
-    },
-  },
-  outputDir: 'test-results',
-  globalSetup: require.resolve('./src/fixtures/global.setup.ts'),
-  globalTeardown: require.resolve('./src/fixtures/global.teardown.ts'),
 });
