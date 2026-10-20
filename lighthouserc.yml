@@ -1,9 +1,8 @@
 ci:
   collect:
     numberOfRuns: 3
-    startServerCommand: 'cd test-server && npm start &'
     url:
-      - 'http://localhost:3000'
+      - 'https://www.saucedemo.com'
     settings:
       headless: true
       preset: 'desktop'
