@@ -1,4 +1,4 @@
-import { BasePage } from '../BasePage';
+import { BasePage } from './BasePage';
 
 export class LoginPage extends BasePage {
   protected readonly path = '/';
@@ -7,14 +7,9 @@ export class LoginPage extends BasePage {
   private readonly password = this.page.getByTestId('password');
   private readonly submit = this.page.getByTestId('login-button');
   private readonly error = this.page.getByTestId('error');
-  private readonly logo = this.page.locator('.login_logo');
 
   async waitForLoad(): Promise<void> {
-    await this.logo.waitFor({ state: 'visible' });
-  }
-
-  async isLogoVisible(): Promise<boolean> {
-    return this.logo.isVisible();
+    await this.username.waitFor({ state: 'visible' });
   }
 
   async login(username: string, password: string): Promise<void> {

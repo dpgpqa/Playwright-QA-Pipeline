@@ -11,31 +11,69 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-  secret: 'saucedemo-secret',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false, maxAge: 3600000 }
-}));
+app.use(
+  session({
+    secret: 'saucedemo-secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 3600000 },
+  })
+);
 
 // Users
 const users = {
-  'standard_user': { password: 'secret_sauce', name: 'Standard User' },
-  'locked_out_user': { password: 'secret_sauce', name: 'Locked Out User', locked: true },
-  'problem_user': { password: 'secret_sauce', name: 'Problem User' },
-  'performance_glitch_user': { password: 'secret_sauce', name: 'Performance Glitch User' },
-  'error_user': { password: 'secret_sauce', name: 'Error User' },
-  'visual_user': { password: 'secret_sauce', name: 'Visual User' }
+  standard_user: { password: 'secret_sauce', name: 'Standard User' },
+  locked_out_user: { password: 'secret_sauce', name: 'Locked Out User', locked: true },
+  problem_user: { password: 'secret_sauce', name: 'Problem User' },
+  performance_glitch_user: { password: 'secret_sauce', name: 'Performance Glitch User' },
+  error_user: { password: 'secret_sauce', name: 'Error User' },
+  visual_user: { password: 'secret_sauce', name: 'Visual User' },
 };
 
 // Products
 const products = [
-  { id: 'sauce-labs-backpack', name: 'Sauce Labs Backpack', price: 29.99, desc: 'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.', img: 'sauce-backpack-1200x1500.jpg' },
-  { id: 'sauce-labs-bike-light', name: 'Sauce Labs Bike Light', price: 9.99, desc: 'A red light is not the desired state in testing but it sure helps when riding your bike at night. Water-resistant with 3 lighting modes, 1 AAA battery included.', img: 'bike-light-1200x1500.jpg' },
-  { id: 'sauce-labs-bolt-t-shirt', name: 'Sauce Labs Bolt T-Shirt', price: 15.99, desc: 'Get your testing superhero on with the Sauce Labs bolt T-shirt. From American Apparel, 100% combed ring-spun cotton, heather gray with red bolt.', img: 'bolt-shirt-1200x1500.jpg' },
-  { id: 'sauce-labs-fleece-jacket', name: 'Sauce Labs Fleece Jacket', price: 49.99, desc: 'It is not every day you come across a midweight fleece jacket that can stand up to the elements. You stay warm and dry no matter what.', img: 'fleece-jacket-1200x1500.jpg' },
-  { id: 'sauce-labs-onesie', name: 'Sauce Labs Onesie', price: 7.99, desc: 'Rib snap infant onesie for the junior automation engineer in development. Reinforced 3-snap bottom closure, 100% combed ring-spun cotton.', img: 'onesie-1200x1500.jpg' },
-  { id: 'test.allthethings()-t-shirt-(red)', name: 'Test.allTheThings() T-Shirt (Red)', price: 15.99, desc: 'This classic Sauce Labs t-shirt is perfect to wear when cozying up to your keyboard to automate a few tests. Super-soft, 100% cotton.', img: 'red-shirt-1200x1500.jpg' }
+  {
+    id: 'sauce-labs-backpack',
+    name: 'Sauce Labs Backpack',
+    price: 29.99,
+    desc: 'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.',
+    img: 'sauce-backpack-1200x1500.jpg',
+  },
+  {
+    id: 'sauce-labs-bike-light',
+    name: 'Sauce Labs Bike Light',
+    price: 9.99,
+    desc: 'A red light is not the desired state in testing but it sure helps when riding your bike at night. Water-resistant with 3 lighting modes, 1 AAA battery included.',
+    img: 'bike-light-1200x1500.jpg',
+  },
+  {
+    id: 'sauce-labs-bolt-t-shirt',
+    name: 'Sauce Labs Bolt T-Shirt',
+    price: 15.99,
+    desc: 'Get your testing superhero on with the Sauce Labs bolt T-shirt. From American Apparel, 100% combed ring-spun cotton, heather gray with red bolt.',
+    img: 'bolt-shirt-1200x1500.jpg',
+  },
+  {
+    id: 'sauce-labs-fleece-jacket',
+    name: 'Sauce Labs Fleece Jacket',
+    price: 49.99,
+    desc: 'It is not every day you come across a midweight fleece jacket that can stand up to the elements. You stay warm and dry no matter what.',
+    img: 'fleece-jacket-1200x1500.jpg',
+  },
+  {
+    id: 'sauce-labs-onesie',
+    name: 'Sauce Labs Onesie',
+    price: 7.99,
+    desc: 'Rib snap infant onesie for the junior automation engineer in development. Reinforced 3-snap bottom closure, 100% combed ring-spun cotton.',
+    img: 'onesie-1200x1500.jpg',
+  },
+  {
+    id: 'test.allthethings()-t-shirt-(red)',
+    name: 'Test.allTheThings() T-Shirt (Red)',
+    price: 15.99,
+    desc: 'This classic Sauce Labs t-shirt is perfect to wear when cozying up to your keyboard to automate a few tests. Super-soft, 100% cotton.',
+    img: 'red-shirt-1200x1500.jpg',
+  },
 ];
 
 // Helper: Check auth
@@ -55,13 +93,17 @@ app.post('/', (req, res) => {
   const user = users[username];
 
   if (!user) {
-    return res.render('index', { error: 'Username and password do not match any user in this service' });
+    return res.redirect(
+      '/?error=' + encodeURIComponent('Username and password do not match any user in this service')
+    );
   }
   if (user.locked) {
-    return res.render('index', { error: 'Sorry, this user has been locked out.' });
+    return res.redirect('/?error=' + encodeURIComponent('Sorry, this user has been locked out.'));
   }
   if (user.password !== password) {
-    return res.render('index', { error: 'Username and password do not match any user in this service' });
+    return res.redirect(
+      '/?error=' + encodeURIComponent('Username and password do not match any user in this service')
+    );
   }
 
   req.session.user = { username, name: user.name };
@@ -127,7 +169,11 @@ app.post('/checkout-step-one.html', requireAuth, (req, res) => {
 });
 
 app.post('/checkout-step-two.html', requireAuth, (req, res) => {
-  req.session.checkout = { ...req.session.checkout, payment: 'SauceCard #31337', shipping: 'FREE PONY EXPRESS DELIVERY!' };
+  req.session.checkout = {
+    ...req.session.checkout,
+    payment: 'SauceCard #31337',
+    shipping: 'FREE PONY EXPRESS DELIVERY!',
+  };
   res.redirect('/checkout-complete.html');
 });
 

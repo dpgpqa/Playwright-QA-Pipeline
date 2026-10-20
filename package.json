@@ -4,7 +4,7 @@
   "private": true,
   "description": "Lean QA automation template for SaaS web apps — Playwright + TypeScript, wired against saucedemo.com out of the box",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22"
   },
   "scripts": {
     "test": "playwright test",

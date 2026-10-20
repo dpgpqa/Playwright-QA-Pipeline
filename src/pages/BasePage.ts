@@ -17,10 +17,6 @@ export abstract class BasePage {
     return this.page.url();
   }
 
-  async waitForURL(url: string | RegExp, options?: { timeout?: number }): Promise<void> {
-    await this.page.waitForURL(url, options);
-  }
-
   getPage(): Page {
     return this.page;
   }

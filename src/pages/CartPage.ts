@@ -1,4 +1,4 @@
-import { BasePage } from '../BasePage';
+import { BasePage } from './BasePage';
 
 export class CartPage extends BasePage {
   protected readonly path = '/cart.html';
@@ -17,8 +17,8 @@ export class CartPage extends BasePage {
   }
 
   async removeItem(itemName: string): Promise<void> {
-    const item = this.page.locator('.cart_item', { hasText: itemName });
-    await item.getByRole('button', { name: 'Remove' }).click();
+    const item = this.cartItems.filter({ hasText: itemName });
+    await item.getByTestId(/^remove-/).click();
   }
 
   async proceedToCheckout(): Promise<void> {
@@ -29,17 +29,5 @@ export class CartPage extends BasePage {
   async continueShopping(): Promise<void> {
     await this.continueShoppingButton.click();
     await this.page.waitForURL('**/inventory.html');
-  }
-
-  async getItemQuantity(itemName: string): Promise<number> {
-    const item = this.page.locator('.cart_item', { hasText: itemName });
-    const qty = await item.locator('.cart_quantity').textContent();
-    return qty ? parseInt(qty, 10) : 0;
-  }
-
-  async getItemPrice(itemName: string): Promise<number> {
-    const item = this.page.locator('.cart_item', { hasText: itemName });
-    const priceText = await item.locator('.inventory_item_price').textContent();
-    return priceText ? parseFloat(priceText.replace('$', '')) : 0;
   }
 }
