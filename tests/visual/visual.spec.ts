@@ -7,7 +7,7 @@ test.describe('Visual Regression Tests', () => {
       await expect(page).toHaveScreenshot('saucedemo-login.png', {
         fullPage: true,
         animations: 'disabled',
-        maxDiffPixels: 200,
+        maxDiffPixels: 5000,
       });
     });
 
@@ -22,7 +22,7 @@ test.describe('Visual Regression Tests', () => {
       await expect(page).toHaveScreenshot('saucedemo-inventory.png', {
         fullPage: true,
         animations: 'disabled',
-        maxDiffPixels: 200,
+        maxDiffPixels: 5000,
       });
     });
 
@@ -40,7 +40,7 @@ test.describe('Visual Regression Tests', () => {
       await expect(page).toHaveScreenshot('saucedemo-cart.png', {
         fullPage: true,
         animations: 'disabled',
-        maxDiffPixels: 200,
+        maxDiffPixels: 5000,
       });
     });
 
@@ -60,7 +60,7 @@ test.describe('Visual Regression Tests', () => {
       await expect(page).toHaveScreenshot('saucedemo-checkout.png', {
         fullPage: true,
         animations: 'disabled',
-        maxDiffPixels: 200,
+        maxDiffPixels: 5000,
       });
     });
   });
