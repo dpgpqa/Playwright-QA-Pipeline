@@ -106,7 +106,6 @@ jobs:
           target: 'https://www.saucedemo.com'
           rules_tsv: '.zap/rules.tsv'
           cmd_options: '-a'
-          artifact_name: 'zapscan'
 
       - name: Upload ZAP Report
         if: always()
