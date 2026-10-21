@@ -180,6 +180,64 @@ npm run clean             # Clean artifacts
 └── LICENSE
 ```
 
+## AI-Assisted QA (Agents, Skills, Commands)
+
+This template includes a **Claude Code automation layer** for QA workflows. See [`CLAUDE.md`](CLAUDE.md) for full rules.
+
+### Agents (roles completos)
+
+| Agent            | Purpose                                    |
+| ---------------- | ------------------------------------------ |
+| `test-writer`    | Write tests from feature descriptions      |
+| `triage`         | Debug failing or flaky tests               |
+| `pom-builder`    | Create Page Object classes                 |
+| `jira-qa-runner` | Full ticket → test → report → defect cycle |
+
+### Skills (capacidades atómicas reusables)
+
+| Skill                | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `write-test`         | Atomic test writing from scenario              |
+| `create-page-object` | Atomic POM creation                            |
+| `generate-locator`   | Stable locator strategy (`getByTestId` first)  |
+| `analyze-failure`    | Classify failure → recommend fix               |
+| `run-tests`          | Execute tests, capture artifacts               |
+| `pull-jira-ticket`   | Extract AC from Jira tickets                   |
+| `self-heal-test`     | One-attempt selector/timing auto-fix           |
+| `write-run-report`   | Generate `reports/runs/YYYY-MM-DD-<ticket>.md` |
+| `create-jira-defect` | File Jira defect with dedup check              |
+| `store-qa-memory`    | Persist learned patterns                       |
+
+### Commands (playbooks paso a paso)
+
+| Command             | Purpose                       |
+| ------------------- | ----------------------------- |
+| `test`              | Full suite playbook           |
+| `smoke`             | Quick smoke run               |
+| `lint`              | Code quality gates            |
+| `update-snapshots`  | Regenerate visual baselines   |
+| `new-page`          | POM → fixture → test workflow |
+| `jira-qa-run`       | End-to-end Jira QA cycle      |
+| `check-environment` | Poll `BASE_URL` until ready   |
+
+### Uso
+
+```bash
+# En Claude Code / Hermes:
+Use agents/jira-qa-runner to run QA cycle for PROJ-123
+Use skills/write-test to create test for "user can add item to cart"
+```
+
+### Requisitos para Jira Integration
+
+Configura estos secrets en GitHub Actions:
+
+- `JIRA_BASE_URL` — ej. `https://your-company.atlassian.net`
+- `JIRA_EMAIL` — tu email de Jira
+- `JIRA_API_TOKEN` — token de API de Jira
+
+---
+
 ## The Page Object Model
 
 Every page extends `BasePage` and follows the same shape. Locators are private, methods are named for user intent, no `expect()` lives in a POM.
