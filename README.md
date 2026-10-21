@@ -74,7 +74,7 @@ The template ships **pre-wired against [saucedemo.com](https://www.saucedemo.com
 
 ## Quick Start
 
-```
+```bash
 # 1. Install
 npm install
 npx playwright install --with-deps chromium
@@ -95,7 +95,7 @@ You should see 4 smoke tests pass against saucedemo. Full suite (`npm test`) run
 
 ## Project Layout
 
-```
+```text
 .
 ├── src/
 │   ├── pages/                    POM: one file per page or major flow
@@ -203,7 +203,7 @@ Every page extends `BasePage` and follows the same shape. Locators are private, 
 
 ### Base class
 
-```
+```typescript
 // src/pages/BasePage.ts
 import { Page, Response } from '@playwright/test';
 
@@ -228,7 +228,7 @@ export abstract class BasePage {
 
 ### Page class — the pattern
 
-```
+```typescript
 // src/pages/LoginPage.ts
 import { BasePage } from './BasePage';
 
@@ -269,7 +269,7 @@ export class LoginPage extends BasePage {
 
 Components don't extend `BasePage`. They take a `Page` and expose actions on a recurring UI fragment (header, modal, drawer).
 
-```
+```typescript
 // src/components/Header.ts
 export class Header {
   private readonly cartLink: Locator;
@@ -282,10 +282,18 @@ export class Header {
     // ...
   }
 
-  async cartBadgeCount(): Promise<number> { /* ... */ }
-  async openCart(): Promise<void> { /* ... */ }
-  async logout(): Promise<void> { /* ... */ }
-  async resetAppState(): Promise<void> { /* ... */ }
+  async cartBadgeCount(): Promise<number> {
+    /* ... */
+  }
+  async openCart(): Promise<void> {
+    /* ... */
+  }
+  async logout(): Promise<void> {
+    /* ... */
+  }
+  async resetAppState(): Promise<void> {
+    /* ... */
+  }
 }
 ```
 
@@ -309,7 +317,7 @@ Tests **import `test` from `src/fixtures/base.fixture.ts`** — never from `@pla
 
 Each Playwright worker performs **one** login on first use and writes its own storage state file:
 
-```
+```text
 .auth/user-0.json   ← worker 0
 .auth/user-1.json   ← worker 1
 .auth/user-2.json   ← worker 2
@@ -337,7 +345,7 @@ A single shared session is fine for saucedemo but breaks on real apps as soon as
 
 Tests that exercise the login flow itself, or any logged-out path, use the `freshContextPage` fixture:
 
-```
+```typescript
 import { test, expect } from '../../src/fixtures/base.fixture';
 import { LoginPage } from '../../src/pages/LoginPage';
 
@@ -367,7 +375,7 @@ test('locked-out user sees the locked error @smoke', async ({ freshContextPage }
 
 `test-data/users.json` and `test-data/products.json` are parsed through zod schemas in `src/utils/testData.ts` **at module load time**. If a schema breaks, the import fails — not a random test deep in the run.
 
-```
+```typescript
 import { z } from 'zod';
 import usersJson from '../../test-data/users.json';
 
@@ -392,7 +400,7 @@ Passwords are **never** in JSON. They come from `process.env.TEST_USER_PASSWORD`
 
 ### Factories — for per-test variable data
 
-```
+```typescript
 import { shippingFactory } from '../../src/factories';
 
 test('checkout accepts any valid shipping info @regression', async ({ checkoutInfoPage }) => {
@@ -435,7 +443,7 @@ Tags live in test titles and are matched with `--grep`. Every test must have at 
 
 ### Run modes
 
-```
+```bash
 # Tag-based
 npx playwright test --grep @smoke
 npx playwright test --grep "@smoke|@api"
@@ -472,7 +480,7 @@ npx playwright show-report reports/html
 
 ### Visual baselines
 
-```
+```bash
 # Generate per-browser baselines (commit results)
 npx playwright test --grep @visual --project=chromium --update-snapshots
 npx playwright test --grep @visual --project=firefox  --update-snapshots
@@ -486,7 +494,7 @@ See [`tests/visual/README.md`](/dpgpqa/Playwright-QA-Pipeline/blob/main/tests/vi
 
 ### Codegen (locator authoring)
 
-```
+```bash
 npx playwright codegen https://your-staging-app.com
 ```
 
@@ -494,7 +502,7 @@ Prefer **Playwright MCP** when working inside Claude Code — it keeps the conte
 
 ### Browser & dependency install
 
-```
+```bash
 npx playwright install              # download bundled browsers
 npx playwright install --with-deps  # + apt-install Linux system libs
 npx playwright install chromium     # one browser only
@@ -503,7 +511,7 @@ npx playwright install-deps         # OS deps only (when cache already has brows
 
 ### Report merge (sharded CI)
 
-```
+```bash
 # Each shard writes a blob report; merge into one HTML artifact
 npx playwright merge-reports --reporter html ./blob-report-shard-1 ./blob-report-shard-2
 ```
@@ -514,7 +522,7 @@ npx playwright merge-reports --reporter html ./blob-report-shard-1 ./blob-report
 
 ### Selectors — semantic only, in priority order
 
-```
+```text
 1. getByRole('button', { name: 'Sign in' })   // role + accessible name
 2. getByLabel('Email address')                // <label> association
 3. getByPlaceholder('Search…')                // placeholder text
@@ -531,7 +539,7 @@ npx playwright merge-reports --reporter html ./blob-report-shard-1 ./blob-report
 
 ### Waiting — never `waitForTimeout`
 
-```
+```typescript
 // ❌ Hides real timing issues
 await page.waitForTimeout(2000);
 
@@ -546,7 +554,7 @@ Playwright's locators auto-wait up to the configured `actionTimeout` (10 s) and 
 
 ### Test structure — Arrange → Act → Assert
 
-```
+```typescript
 test('user can create a project @regression', async ({ inventoryPage, header }) => {
   // Arrange
   await inventoryPage.goto();
@@ -638,7 +646,7 @@ Enable these settings under **Settings → Branches → Branch protection rules 
 
 Every change — including AI-generated code — goes through this path:
 
-```
+```text
 1. Branch    git checkout -b feat/PROJ-123-add-checkout-tests
 2. Develop   make changes locally
 3. Gate      npm run typecheck && npm run lint && npm run test:smoke
@@ -702,7 +710,7 @@ Code generated by Claude (or any AI assistant) is held to **exactly the same sta
 - Use `agents/jira-qa-runner.md` for structured AI-driven test generation — it enforces coding standards before outputting files
 - Never commit directly from a Claude session without running the full pre-push gate:
 
-```
+```bash
 npm run typecheck && npm run lint && npm run test:smoke
 ```
 
@@ -772,7 +780,7 @@ Three workflows, every one with least-privilege permissions and `paths-ignore` f
 
 ### `ci.yml` — every push + PR + nightly
 
-```
+```text
 lint                              (typecheck + eslint + prettier)
   └── smoke + api (sharded 2-way) (chromium, with browser cache)
         ├── merge-smoke-report    (blob → HTML + JSON, PR comment, 90-day results.json)
@@ -794,7 +802,7 @@ Key features:
 
 ### `security.yml` — security gates
 
-```
+```text
 codeql                            (every push + PR + weekly)
 npm-audit                         (high-severity prod vulns block)
 dependency-review                 (PR only — blocks new high-severity transitives)
@@ -804,7 +812,7 @@ zap-scan                          (scheduled + manual only — baseline passive 
 
 ### `lighthouse.yml` — performance budgets
 
-```
+```text
 lighthouse                        (every PR + manual — perf 0.85, a11y 0.90, BP 0.90)
 ```
 
@@ -814,7 +822,7 @@ Score thresholds in [`lighthouserc.yml`](/dpgpqa/Playwright-QA-Pipeline/blob/mai
 
 ## Environment Variables
 
-```
+```text
 # .env.example — copy to .env.local, never commit .env.local
 BASE_URL=https://www.saucedemo.com              # required
 TEST_USER_USERNAME=standard_user                # required
@@ -850,7 +858,7 @@ JIRA_PROJECT_KEY=QA
 
 ## Scripts
 
-```
+```bash
 npm test                    # full suite, all browsers
 npm run test:smoke          # @smoke only — chromium
 npm run test:regression     # @regression only — chromium
@@ -878,7 +886,7 @@ npm run clean               # remove reports, test-results, .auth
 
 `husky` + `lint-staged` are wired automatically via `npm install` (`prepare: husky`).
 
-```
+```text
 .husky/pre-commit  →  lint-staged    (eslint --fix + prettier --write on staged files)
 .husky/pre-push    →  npm run typecheck
 ```
@@ -962,7 +970,7 @@ The `agents/`, `skills/`, and `commands/` folders define how Claude approaches t
 
 The `jira-qa-runner` agent automates the full QA lifecycle for a Jira ticket:
 
-```
+```text
 Ticket PROJ-123
   → extract acceptance criteria
   → generate Playwright test file(s)
@@ -976,7 +984,7 @@ Ticket PROJ-123
 
 To use it, invoke the agent with a ticket ID:
 
-```
+```text
 Use agents/jira-qa-runner to run the QA cycle for PROJ-123
 ```
 
