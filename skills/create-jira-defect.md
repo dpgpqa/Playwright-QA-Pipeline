@@ -1,102 +1,39 @@
 ---
 name: create-jira-defect
-description: Create deduplicated Jira defect from test failure
+description: Create a Jira defect with dedup check
 ---
 
 # Create Jira Defect Skill
 
-Create a `[AUTO]` Jira defect from a test failure with deduplication check.
+Atomic capability: file defect in Jira.
 
-## Required
+## Input
 
-- `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`
-- `mcp-atlassian` configured in `.mcp.json`
+- Source ticket ID
+- Failure details (test name, error, root cause)
+- Environment info
 
-## Deduplication Check
+## Output
 
-Before creating, search for existing open defects:
+- Jira defect key (e.g., `PROJ-456`)
+- Link added to source ticket
 
-```typescript
-const existing = await jira.searchIssues(
-  `project = ${JIRA_PROJECT_KEY} AND status in (Open, "In Progress") AND summary ~ "${summary}"`
-);
-if (existing.issues.length > 0) {
-  // Link to existing defect instead of creating new
-  return existing.issues[0].key;
-}
-```
+## Process
 
-## Defect Template
+1. **Dedup check**: Search existing defects for same error signature
+2. **Create defect** with:
+   - Summary: `[AUTO] TICKET-123: Test failure - brief description`
+   - Description: Full error, stack trace, environment, reproduction steps
+   - Labels: `auto-generated`, `qa-pipeline`, `TICKET-123`
+   - Link: `relates to` source ticket
+3. **Comment on source ticket**: "Auto-created defect PROJ-456 for failing test"
 
-```json
-{
-  "fields": {
-    "project": { "key": "QA" },
-    "summary": "[AUTO] Checkout fails with invalid card on staging",
-    "description": {
-      "type": "doc",
-      "version": 1,
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Automated test failure from QA run." }]
-        },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Ticket: PROJ-123" }] },
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Test: Checkout with invalid card (@regression)" }]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "Error: TimeoutError: locator.fill: Timeout 15000ms exceeded."
-            }
-          ]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "Trace: test-results/regression-checkout-invalid-card/trace.zip"
-            }
-          ]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            { "type": "text", "text": "Environment: staging (https://staging.example.com)" }
-          ]
-        },
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Commit: abc1234" }] },
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Run report: reports/runs/2024-01-15-PROJ-123.md" }]
-        }
-      ]
-    },
-    "issuetype": { "name": "Bug" },
-    "labels": ["auto", "qa", "regression", "checkout"],
-    "components": [{ "name": "payments" }],
-    "assignee": { "accountId": "qa-bot" }
-  }
-}
-```
+## Uses
 
-## Link to Source Ticket
+- `JiraApi.ts` → `createDefect()`, `searchIssues()`
 
-After creation, link to the source feature ticket:
+## Safety
 
-```typescript
-await jira.linkIssues(newDefectKey, 'PROJ-123', 'Blocks');
-```
-
-## Steps
-
-1. **Search** for existing similar defects
-2. **If found** — link to it, return existing key
-3. **If not found** — create `[AUTO]` defect with full context
-4. **Link** to source feature ticket
-5. **Return** new defect key
+- Only create if no existing matching defect
+- Always label `auto-generated`
+- Human triage required within 24h

@@ -1,71 +1,77 @@
 ---
 name: jira-qa-run
-description: End-to-end Jira QA runbook
+description: End-to-end Jira QA cycle playbook
 ---
 
-# Jira QA Runbook
+# Jira QA Run Playbook
 
-End-to-end QA cycle for a Jira ticket using the jira-qa-runner agent.
+Full ticket → test → report → defect cycle.
 
 ## Prerequisites
 
-- `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY` in GitHub secrets
-- `mcp-atlassian` + `playwright-mcp` in `.mcp.json`
-- Python + uv (`pip install uv` or `brew install uv`)
+- `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` secrets
+- `src/api/JiraApi.ts` configured
+- `agents/jira-qa-runner.md` available
 
-## Invocation
-
-```
-Use agents/jira-qa-runner to run the QA cycle for PROJ-123
-```
-
-## What Happens
-
-```
-Ticket PROJ-123
-  → extract acceptance criteria (pull-jira-ticket skill)
-  → generate Playwright test file(s) (write-test skill)
-  → wait for environment to be ready (check-environment command)
-  → run tests (run-tests skill)
-  → if failing: attempt one self-heal (self-heal-test skill)
-  → write run report to reports/runs/YYYY-MM-DD-PROJ-123.md (write-run-report skill)
-  → if still failing: create [AUTO] Jira defect (create-jira-defect skill, dedup-checked)
-  → store selector/flake patterns to memory (store-qa-memory skill)
-```
-
-## Outputs
-
-- Test files in appropriate `tests/` subfolder
-- Run report in `reports/runs/YYYY-MM-DD-PROJ-123.md`
-- `[AUTO]` Jira defect if still failing (dedup-checked)
-- Updated memory with selector/flake patterns
-
-## Manual Alternative
-
-If not using the agent, run each step manually:
+## Invoke
 
 ```bash
-# 1. Extract AC from Jira
-# (use pull-jira-ticket skill or read ticket manually)
+# Via Claude
+Use agents/jira-qa-runner to run QA cycle for PROJ-123
+```
 
-# 2. Write tests
-# (use write-test skill)
+## Manual Steps (if not using agent)
 
-# 3. Wait for env
-npm run check-environment
+### 1. Pull Ticket
 
-# 4. Run tests
-npm run test:smoke && npm run test:regression
+```bash
+# Extract AC from Jira
+# Parse into testable scenarios
+```
 
-# 5. Self-heal if needed
-# (use self-heal-test skill)
+### 2. Generate Tests
 
-# 6. Write report
-# (use write-run-report skill)
+```bash
+# Create test file(s) from AC
+# Create Page Objects if needed
+```
 
-# 7. Create defect if needed
-# (use create-jira-defect skill)
+### 3. Wait for Environment
 
-# 8. Store patterns
-# (use store-qa-memory skill)
+```bash
+# Poll BASE_URL until ready
+npx playwright test --grep @smoke --project=chromium
+```
+
+### 4. Run Tests
+
+```bash
+npm run test:smoke
+npm run test:regression
+# etc.
+```
+
+### 5. Self-Heal (One Attempt)
+
+```bash
+# If selector/timing failures only
+# Fix and re-run once
+```
+
+### 6. Write Run Report
+
+```bash
+# reports/runs/YYYY-MM-DD-PROJ-123.md
+```
+
+### 7. Create Defect (If Failing)
+
+```bash
+# Dedup check → create defect → link to ticket
+```
+
+### 8. Store Patterns
+
+```bash
+# Save selector fixes, flake patterns to memory
 ```

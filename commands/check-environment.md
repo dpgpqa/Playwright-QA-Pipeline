@@ -3,50 +3,45 @@ name: check-environment
 description: Poll BASE_URL until ready
 ---
 
-# Check Environment
+# Check Environment Command Playbook
 
-Poll the target environment until it's ready for testing.
+Wait for target environment to be available before running tests.
 
-## Commands
-
-```bash
-# Check all environments
-npm run check-environment
-
-# Check specific (via script)
-node -e "
-const { checkAllEnvironments } = require('./src/utils/environmentCheck.ts');
-checkAllEnvironments().then(console.log);
-"
-```
-
-## What It Does
-
-Polls each `BASE_URL` with exponential backoff:
-
-- Initial interval: 3s
-- Max timeout: 30s per environment
-- Returns `{ envName: boolean }` map
-
-## Environment Variables
-
-| Variable                   | Description          |
-| -------------------------- | -------------------- |
-| `SAUCEDEMO_BASE_URL`       | SauceDemo URL        |
-| `RESTFUL_BOOKER_BASE_URL`  | Restful-Booker API   |
-| `THE_INTERNET_BASE_URL`    | The Internet app     |
-| `JSONPLACEHOLDER_BASE_URL` | JSONPlaceholder API  |
-| `DEMOQA_BASE_URL`          | DemoQA app           |
-| `ENV_CHECK_TIMEOUT_MS`     | Override 30s default |
-
-## CI Usage
-
-In `ci.yml`, `test-smoke` job runs `check-environment` implicitly via global setup.
-
-## Manual Check
+## Usage
 
 ```bash
-# Quick curl check
-curl -s -o /dev/null -w "%{http_code}" https://your-staging-app.com
-# Should return 200
+# Via Claude
+Use commands/check-environment
 ```
+
+## Logic
+
+```typescript
+// src/utils/environmentCheck.ts
+export async function waitForEnvironment(
+  url: string,
+  maxRetries = 30,
+  intervalMs = 10000
+): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      if (response.ok) return;
+    } catch {}
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  throw new Error(`Environment ${url} not ready after ${maxRetries} retries`);
+}
+```
+
+## Called By
+
+- `global.setup.ts` — before any tests
+- `jira-qa-run` — before test execution
+- Manual: `npm run check:env` (if script added)
+
+## Configuration
+
+- `maxRetries`: 30 (5 minutes default)
+- `intervalMs`: 10000 (10 seconds)
+- Override via env: `ENV_CHECK_RETRIES`, `ENV_CHECK_INTERVAL`

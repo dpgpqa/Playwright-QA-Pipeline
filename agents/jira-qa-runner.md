@@ -1,60 +1,68 @@
 ---
 name: jira-qa-runner
 description: Full Jira ticket → test → report → defect cycle
-tools: read, write, edit, bash, glob
+tools: [read, write, edit, bash, glob, JiraApi]
 ---
 
 # Jira QA Runner Agent
 
 Automates the full QA lifecycle for a Jira ticket.
 
-## Rules
+## Input
 
-1. **Extract AC** from Jira ticket using `pull-jira-ticket` skill
-2. **Generate tests** using `write-test` skill
-3. **Wait for env** using `check-environment` command
-4. **Run tests** using `run-tests` skill
-5. **Self-heal once** using `self-heal-test` skill
-6. **Write report** using `write-run-report` skill
-7. **Create defect** using `create-jira-defect` skill (dedup-checked)
-8. **Store patterns** using `store-qa-memory` skill
+- Jira ticket ID (e.g., `PROJ-123`)
 
-## Workflow
+## Process
 
-```
-Ticket PROJ-123
-  → extract acceptance criteria
-  → generate Playwright test file(s)
-  → wait for environment to be ready
-  → run tests
-  → if failing: attempt one self-heal (selector/timing only)
-  → write run report to reports/runs/YYYY-MM-DD-PROJ-123.md
-  → if still failing: create [AUTO] Jira defect (with dedup check)
-  → store selector/flake patterns to memory
-```
+### 1. Pull Ticket
 
-## Required Environment
+- Use `pull-jira-ticket` skill to extract acceptance criteria
+- Parse AC into testable scenarios
 
-- `JIRA_BASE_URL` — Jira Cloud URL (no trailing slash)
-- `JIRA_EMAIL` — service account email
-- `JIRA_API_TOKEN` — API token (rotate every 90 days)
-- `JIRA_PROJECT_KEY` — project key for auto-defects (e.g., `QA`)
+### 2. Generate Tests
 
-## Invocation
+- Use `test-writer` agent to create test file(s)
+- Use `pom-builder` if new Page Objects needed
 
-```
-Use agents/jira-qa-runner to run the QA cycle for PROJ-123
-```
+### 3. Wait for Environment
 
-## Prerequisites
+- Use `check-environment` command to poll `BASE_URL` until ready
 
-- Python + uv installed (`pip install uv` or `brew install uv`)
-- `mcp-atlassian` configured in `.mcp.json`
-- Jira MCP configured in `.mcp.json`
+### 4. Run Tests
+
+- Use `run-tests` skill to execute generated tests
+- Capture results, screenshots, traces
+
+### 5. Self-Heal (One Attempt)
+
+- If failures: use `self-heal-test` skill (selector/timing only)
+- Re-run once after heal
+
+### 6. Write Run Report
+
+- Use `write-run-report` skill
+- Output: `reports/runs/YYYY-MM-DD-PROJ-123.md`
+- Include: test results, screenshots, traces, environment info
+
+### 7. Create Defect (If Still Failing)
+
+- Use `create-jira-defect` skill
+- Dedup check: search existing defects for same error
+- Link defect to source ticket
+
+### 8. Store Patterns
+
+- Use `store-qa-memory` skill
+- Save selector fixes, flake patterns, timing adjustments
 
 ## Output
 
-- Test files in appropriate `tests/` subfolder
-- Run report in `reports/runs/YYYY-MM-DD-PROJ-123.md`
-- `[AUTO]` Jira defect if still failing (dedup-checked)
-- Updated memory with selector/flake patterns
+- Test file(s) in `tests/`
+- Run report in `reports/runs/`
+- Jira defect (if created) linked to source ticket
+- Memory updates for future runs
+
+## Prerequisites
+
+- `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` secrets
+- `src/api/JiraApi.ts` configured

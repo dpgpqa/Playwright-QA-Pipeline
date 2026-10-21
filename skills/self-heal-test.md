@@ -1,43 +1,40 @@
 ---
 name: self-heal-test
-description: One-attempt selector/timing fix for flaky test
+description: One-attempt selector/timing fix for a failing test
 ---
 
 # Self-Heal Test Skill
 
-Attempt one self-heal fix for a flaky test (selector/timing only).
+Atomic capability: attempt one automatic fix for a failing test.
 
-## Rules
+## Scope
 
-- **One attempt max** — if it doesn't work, quarantine
-- **Selector/timing only** — no logic changes
-- **Never** add `waitForTimeout` or CSS/XPath selectors
-- **Run `npm run typecheck && npm run lint`** after fix
+**Only** these fix types:
 
-## Common Fixes
+- Selector changes (element moved, attribute changed)
+- Timing adjustments (wait longer, poll)
+- Data setup (missing factory data)
 
-| Failure                           | Fix                                            |
-| --------------------------------- | ---------------------------------------------- |
-| `locator('.btn-primary')` timeout | `getByRole('button', { name: 'Submit' })`      |
-| `waitForTimeout(2000)`            | `expect.poll(() => condition).toBeTruthy()`    |
-| `nth(2)` flakes                   | Add `data-test` to frontend, use `getByTestId` |
-| Element not visible               | `expect(locator).toBeVisible()` auto-wait      |
+**Never** fix:
+
+- Business logic changes
+- API contract changes
+- Architecture changes
 
 ## Process
 
-1. **Read failure** — trace, screenshot, video
-2. **Classify** per `docs/flake-handling.md`
-3. **Apply one fix** (selector or timing)
-4. **Verify** with `npm run test:smoke -- --grep "test name" --repeat-each 3`
-5. **If fixed** — commit fix
-6. **If not** — add `@quarantine` tag + GitHub issue
+1. Analyze failure with `analyze-failure`
+2. If selector/timing:
+   - Try alternative locator (role, text, test-id)
+   - Increase timeout / add `expect.poll()`
+   - Add missing factory data
+3. Re-run test once
+4. If passes → commit fix
+5. If fails → tag `@quarantine`, escalate
 
-## Example
+## Safety
 
-```typescript
-// ❌ Before
-await page.locator('.btn-primary').click();
-
-// ✅ After
-await page.getByRole('button', { name: 'Submit' }).click();
-```
+- Max 1 attempt per failure
+- Only on CI failures (not local)
+- Log all attempts for audit
+- Human review required for `@quarantine`

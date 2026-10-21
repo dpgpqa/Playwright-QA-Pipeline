@@ -1,51 +1,64 @@
 # Team Contacts & Escalation
 
-## QA Team
+## Team
 
-| Role        | Name        | Slack        | Email                   | Responsibility                  |
-| ----------- | ----------- | ------------ | ----------------------- | ------------------------------- |
-| QA Lead     | Diego Zaito | @diego.zaito | diego.zaito@company.com | Architecture, CI/CD, escalation |
-| QA Engineer | [Name]      | @[slack]     | [email]@company.com     | Test authoring, flake triage    |
-| SDET        | [Name]      | @[slack]     | [email]@company.com     | API, performance, tooling       |
-
-## Dev Team Contacts
-
-| Service     | Owner  | Slack    | Email               | Jira Component |
-| ----------- | ------ | -------- | ------------------- | -------------- |
-| Frontend    | [Name] | @[slack] | [email]@company.com | web            |
-| Backend API | [Name] | @[slack] | [email]@company.com | api            |
-| Payments    | [Name] | @[slack] | [email]@company.com | payments       |
-| Auth        | [Name] | @[slack] | [email]@company.com | auth           |
+| Role          | Name | Slack | Email | Responsibilities                           |
+| ------------- | ---- | ----- | ----- | ------------------------------------------ |
+| QA Lead       |      |       |       | Pipeline ownership, flake triage, releases |
+| QA Engineer   |      |       |       | Test development, Page Objects, CI         |
+| DevOps        |      |       |       | GitHub Actions, runners, secrets rotation  |
+| Dev Lead      |      |       |       | `data-test` attributes, deployments        |
+| Product Owner |      |       |       | Acceptance criteria, prioritization        |
 
 ## Jira
 
-| Key    | Description                 |
-| ------ | --------------------------- |
-| `QA`   | QA project for auto-defects |
-| `PROJ` | Main product project        |
-| `PAY`  | Payments project            |
+| Item              | Value            |
+| ----------------- | ---------------- |
+| Project Key       | `PROJ`           |
+| QA Component      | `QA Automation`  |
+| Defect Label      | `qa-pipeline`    |
+| Auto-defect Label | `auto-generated` |
+| Epic Link         | `QA Pipeline`    |
 
-## Escalation Path
+## Escalation Paths
 
-1. **Test failure** → QA Engineer (30 min SLA)
-2. **Flake / env issue** → QA Lead (1 hr SLA)
-3. **Blocking prod regression** → QA Lead + Dev Lead (immediate)
-4. **Security finding** → Security team + QA Lead (immediate)
+| Issue                       | 1st Contact | 2nd Contact | SLA      |
+| --------------------------- | ----------- | ----------- | -------- |
+| CI pipeline broken          | DevOps      | QA Lead     | 1 hour   |
+| Flaky test blocking release | QA Engineer | QA Lead     | 4 hours  |
+| Security scan failure       | DevOps      | QA Lead     | 2 hours  |
+| Environment down            | DevOps      | Dev Lead    | 30 min   |
+| Secret rotation needed      | DevOps      | QA Lead     | 24 hours |
 
-## Token Rotation (90 days)
+## Token Rotation Schedule
 
-| Token                   | Owner       | Last Rotated | Next Due   |
-| ----------------------- | ----------- | ------------ | ---------- |
-| `JIRA_API_TOKEN`        | Diego Zaito | 2024-01-15   | 2024-04-15 |
-| `LHCI_GITHUB_APP_TOKEN` | Diego Zaito | 2024-01-15   | 2024-04-15 |
-| `SLACK_WEBHOOK_URL`     | Diego Zaito | 2024-01-15   | 2024-04-15 |
-| GitHub PAT (CI)         | Diego Zaito | 2024-01-15   | 2024-04-15 |
+| Token           | Frequency | Owner   | Next Due |
+| --------------- | --------- | ------- | -------- |
+| GitHub PAT (CI) | 90 days   | DevOps  |          |
+| Slack Webhook   | 180 days  | QA Lead |          |
+| Jira API Token  | 180 days  | QA Lead |          |
+| npm token       | N/A       | N/A     | N/A      |
+
+## Secrets Inventory
+
+| Secret               | Scope            | Rotation   | Owner   |
+| -------------------- | ---------------- | ---------- | ------- |
+| `TEST_USER_PASSWORD` | App              | Per policy | QA Lead |
+| `SLACK_WEBHOOK_URL`  | Notifications    | Per policy | QA Lead |
+| `JIRA_API_TOKEN`     | Jira integration | Per policy | QA Lead |
+| `JIRA_EMAIL`         | Jira integration | Per policy | QA Lead |
+| `JIRA_BASE_URL`      | Jira integration | Per policy | QA Lead |
 
 ## On-Call
 
-| Week       | Primary     | Secondary   |
-| ---------- | ----------- | ----------- |
-| 2024-01-15 | Diego Zaito | [Name]      |
-| 2024-01-22 | [Name]      | Diego Zaito |
+- Primary: QA Lead
+- Secondary: DevOps
+- Rotation: Weekly (Mon-Sun)
 
-Update this file after each rotation.
+## Incident Response
+
+1. **Acknowledge** in #qa-alerts (Slack) within 15 min
+2. **Assess** impact (CI blocked? Release blocked? Security?)
+3. **Mitigate** (revert, disable job, hotfix)
+4. **Root Cause** within 24 hours
+5. **Postmortem** if customer-facing or > 1 hour downtime

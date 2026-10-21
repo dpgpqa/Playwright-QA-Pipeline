@@ -7,33 +7,24 @@ updates:
       day: 'monday'
       time: '02:00'
     open-pull-requests-limit: 10
-    reviewers:
-      - 'zaito'
-    assignees:
-      - 'zaito'
     labels:
       - 'dependencies'
-      - 'automated'
+      - 'npm'
     commit-message:
-      prefix: 'chore(deps)'
-      include: 'scope'
+      prefix: 'chore(deps):'
     groups:
       playwright:
         patterns:
           - '@playwright/*'
-          - 'playwright*'
       eslint:
         patterns:
           - 'eslint*'
-          - '@typescript-eslint/*'
+          - '@eslint/*'
           - 'typescript-eslint*'
       testing:
         patterns:
           - '@axe-core/*'
           - 'zod'
-      build:
-        patterns:
-          - 'typescript'
-          - 'prettier'
-          - 'husky'
-          - 'lint-staged'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

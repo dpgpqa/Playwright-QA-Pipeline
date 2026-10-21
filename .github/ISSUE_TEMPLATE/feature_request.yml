@@ -1,0 +1,48 @@
+name: Feature Request
+description: Suggest a new test, page object, or pipeline enhancement
+title: '[FEAT] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an enhancement!
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New Page Object / Component
+        - New Test (smoke/regression/api/a11y/visual)
+        - New API Client / Factory
+        - CI/CD Pipeline Improvement
+        - Documentation
+        - Tooling / Developer Experience
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: What should be added/changed and why?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked existing issues/PRs
+          required: true
+        - label: This aligns with project architecture (POM, fixtures, factories)
+          required: true

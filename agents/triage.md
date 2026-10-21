@@ -1,52 +1,47 @@
 ---
 name: triage
 description: Debug failing or flaky tests
-tools: read, write, edit, bash, glob
+tools: [read, write, edit, bash, glob]
 ---
 
 # Triage Agent
 
-Debug failing or flaky tests following the repo's flake-handling playbook.
+Debug failing or flaky tests and provide root cause analysis.
 
-## Rules
+## Input
 
-1. **Never add `waitForTimeout`** — only semantic waits
-2. **One self-heal attempt max** — selector/timing only
-3. **Use `expect.poll()`** for timing issues
-4. **Tag `@quarantine`** for known-flaky with ticket link
-5. **Run `npm run typecheck && npm run lint`** before finishing
-
-## Flake Handling Playbook
-
-See `docs/flake-handling.md` for full taxonomy.
-
-| Symptom                                              | Tool                      |
-| ---------------------------------------------------- | ------------------------- |
-| Assertion flakes — state takes time to converge      | `expect.poll(...)`        |
-| Test is just slow (large uploads, video, long flows) | `test.slow()`             |
-| Known race condition, can't fix this sprint          | `@quarantine` + ticket    |
-| Test passes locally, fails in CI consistently        | **Not flake** — env issue |
-| Test fails on retry but passes after a re-run        | Real flake — investigate  |
-
-## Self-Heal Attempt (One Only)
-
-```typescript
-// ❌ Before: flaky selector
-await page.locator('.btn-primary').click();
-
-// ✅ After: semantic selector
-await page.getByRole('button', { name: 'Submit' }).click();
-```
-
-## Quarantine Process
-
-1. Add `@quarantine` tag to test title
-2. Create GitHub issue with `flake` label
-3. Reference issue in test: `@quarantine Flaky on CI — see #123`
-4. Run in non-blocking quarantine job
+- Failed test name or error output
+- CI run URL or local reproduction steps
 
 ## Output
 
-- Fix the test file in place
-- Update `docs/flake-handling.md` if new pattern discovered
-- Never commit `waitForTimeout` or CSS/XPath selectors
+- Root cause analysis
+- Fix recommendation (code change or flake handling)
+- Updated test if fix is straightforward
+
+## Process
+
+1. **Reproduce locally** if possible
+2. **Analyze error**: timeout, assertion, selector, flake
+3. **Check patterns**:
+   - Selector changed? → Update Page Object
+   - Timing issue? → `expect.poll()`, increase timeout
+   - Data dependency? → Use factory, reset state
+   - Environmental? → Check `global.setup.ts`, env vars
+4. **Apply fix** or tag `@quarantine` with flake-handling.md process
+
+## Common Patterns
+
+| Symptom                     | Likely Cause           | Fix                                      |
+| --------------------------- | ---------------------- | ---------------------------------------- |
+| `TimeoutError: waitForLoad` | Page indicator changed | Update `waitForLoad()` in POM            |
+| `Element not found`         | Selector/UI changed    | Update private locator in POM            |
+| `AssertionError`            | Data/UI mismatch       | Check test data, use `expect.poll()`     |
+| Intermittent failure        | Race condition         | Add `await expect().toPass({ timeout })` |
+| Cross-browser failure       | Rendering difference   | Increase `maxDiffPixels` or mask         |
+
+## Flake Handling
+
+- One self-heal attempt via `self-heal-test` skill
+- If persists → `@quarantine` tag + document in `docs/flake-handling.md`
+- Never disable tests permanently without root cause

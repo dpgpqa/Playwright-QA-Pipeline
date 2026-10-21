@@ -1,178 +1,151 @@
-import type { APIRequestContext } from '@playwright/test';
-import { request } from '@playwright/test';
 import { z } from 'zod';
-
-const JiraAuthSchema = z.object({
-  session: z.object({
-    name: z.string(),
-    value: z.string(),
-  }),
-});
 
 const JiraIssueSchema = z.object({
   id: z.string(),
   key: z.string(),
   fields: z.object({
     summary: z.string(),
-    description: z.string().optional(),
-    issuetype: z.object({ name: z.string() }),
+    description: z.unknown().optional(),
     status: z.object({ name: z.string() }),
-    assignee: z.object({ displayName: z.string() }).nullable().optional(),
-    reporter: z.object({ displayName: z.string() }),
-    created: z.string(),
-    updated: z.string(),
+    labels: z.array(z.string()),
+    components: z.array(z.object({ name: z.string() })),
+    issuetype: z.object({ name: z.string() }),
     project: z.object({ key: z.string() }),
-    labels: z.array(z.string()).optional(),
-    components: z.array(z.object({ name: z.string() })).optional(),
-    fixVersions: z.array(z.object({ name: z.string() })).optional(),
-    customfield_10000: z.unknown().optional(), // Epic link example
   }),
 });
 
-const JiraSearchSchema = z.object({
+const _JiraSearchResultSchema = z.object({
   issues: z.array(JiraIssueSchema),
   total: z.number(),
-  startAt: z.number(),
-  maxResults: z.number(),
 });
 
-const JiraCreateIssueSchema = z.object({
-  id: z.string(),
-  key: z.string(),
-  self: z.string(),
-});
+export type JiraIssue = z.infer<typeof JiraIssueSchema>;
+export type JiraSearchResult = z.infer<typeof _JiraSearchResultSchema>;
 
 export class JiraApi {
-  private client: APIRequestContext;
-  private sessionCookie: string | null = null;
+  private readonly baseUrl: string;
+  private readonly email: string;
+  private readonly apiToken: string;
 
-  private constructor(client: APIRequestContext) {
-    this.client = client;
+  constructor() {
+    this.baseUrl = process.env.JIRA_BASE_URL ?? '';
+    this.email = process.env.JIRA_EMAIL ?? '';
+    this.apiToken = process.env.JIRA_API_TOKEN ?? '';
+
+    if (!this.baseUrl || !this.email || !this.apiToken) {
+      throw new Error('JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN must be set');
+    }
   }
 
-  static async create(baseURL: string): Promise<JiraApi> {
-    const client = await request.newContext({ baseURL });
-    return new JiraApi(client);
-  }
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}/rest/api/3${endpoint}`;
+    const auth = Buffer.from(`${this.email}:${this.apiToken}`).toString('base64');
 
-  async authenticate(email: string, apiToken: string): Promise<void> {
-    const response = await this.client.post('/rest/auth/1/session', {
-      data: { username: email, password: apiToken },
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Basic ${auth}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
     });
-    const data = await response.json();
-    JiraAuthSchema.parse(data);
-    this.sessionCookie = `${data.session.name}=${data.session.value}`;
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API ${response.status}: ${error}`);
+    }
+
+    return response.json() as Promise<T>;
   }
 
-  getSessionCookie(): string | null {
-    return this.sessionCookie;
+  async getTicket(key: string): Promise<JiraIssue> {
+    return this.request<JiraIssue>(`/issue/${key}`);
   }
 
-  async getTicket(issueKey: string): Promise<z.infer<typeof JiraIssueSchema>> {
-    const response = await this.client.get(`/rest/api/3/issue/${issueKey}`, {
-      headers: { Cookie: this.sessionCookie! },
-    });
-    const data = await response.json();
-    return JiraIssueSchema.parse(data);
+  async searchIssues(jql: string, maxResults = 50): Promise<JiraSearchResult> {
+    return this.request<JiraSearchResult>(
+      `/search?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}`
+    );
   }
 
-  async searchIssues(jql: string, maxResults = 50): Promise<z.infer<typeof JiraSearchSchema>> {
-    const response = await this.client.get('/rest/api/3/search', {
-      params: { jql, maxResults },
-      headers: { Cookie: this.sessionCookie! },
-    });
-    const data = await response.json();
-    return JiraSearchSchema.parse(data);
-  }
-
-  async createDefect(defect: {
+  async createDefect(data: {
     projectKey: string;
     summary: string;
     description: string;
-    issuetype: 'Bug' | 'Task' | 'Story';
     labels?: string[];
     components?: string[];
-    assignee?: string;
-  }): Promise<z.infer<typeof JiraCreateIssueSchema>> {
+    parentKey?: string;
+  }): Promise<JiraIssue> {
     const fields: Record<string, unknown> = {
-      project: { key: defect.projectKey },
-      summary: defect.summary,
+      project: { key: data.projectKey },
+      summary: data.summary,
       description: {
         type: 'doc',
         version: 1,
         content: [
           {
             type: 'paragraph',
-            content: [{ type: 'text', text: defect.description }],
+            content: [{ type: 'text', text: data.description }],
           },
         ],
       },
-      issuetype: { name: defect.issuetype },
+      issuetype: { name: 'Bug' },
+      labels: ['auto-generated', 'qa-pipeline', ...(data.labels ?? [])],
     };
 
-    if (defect.labels?.length) fields.labels = defect.labels;
-    if (defect.components?.length) fields.components = defect.components.map(c => ({ name: c }));
-    if (defect.assignee) fields.assignee = { accountId: defect.assignee };
+    if (data.components?.length) {
+      fields.components = data.components.map(name => ({ name }));
+    }
 
-    const response = await this.client.post('/rest/api/3/issue', {
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: this.sessionCookie!,
-      },
-      data: { fields },
+    if (data.parentKey) {
+      fields.parent = { key: data.parentKey };
+    }
+
+    return this.request<JiraIssue>('/issue', {
+      method: 'POST',
+      body: JSON.stringify({ fields }),
     });
-    const data = await response.json();
-    return JiraCreateIssueSchema.parse(data);
   }
 
   async addComment(issueKey: string, comment: string): Promise<void> {
-    await this.client.post(`/rest/api/3/issue/${issueKey}/comment`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: this.sessionCookie!,
-      },
-      data: {
+    await this.request(`/issue/${issueKey}/comment`, {
+      method: 'POST',
+      body: JSON.stringify({
         body: {
           type: 'doc',
           version: 1,
-          content: [
-            {
-              type: 'paragraph',
-              content: [{ type: 'text', text: comment }],
-            },
-          ],
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: comment }] }],
         },
-      },
+      }),
     });
   }
 
-  async linkIssues(issueKey: string, linkedIssueKey: string, linkType = 'Blocks'): Promise<void> {
-    await this.client.post('/rest/api/3/issueLink', {
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: this.sessionCookie!,
-      },
-      data: {
-        type: { name: linkType },
-        inwardIssue: { key: linkedIssueKey },
-        outwardIssue: { key: issueKey },
-      },
-    });
-  }
+  async transitionIssue(issueKey: string, transitionName: string): Promise<void> {
+    const _issue = await this.getTicket(issueKey);
+    const transitions = await this.request<{ transitions: Array<{ id: string; name: string }> }>(
+      `/issue/${issueKey}/transitions`
+    );
 
-  async healthCheck(): Promise<boolean> {
-    try {
-      const response = await this.client.get('/rest/api/3/myself', {
-        headers: { Cookie: this.sessionCookie! },
-      });
-      return response.ok();
-    } catch {
-      return false;
+    const transition = transitions.transitions.find(
+      t => t.name.toLowerCase() === transitionName.toLowerCase()
+    );
+    if (!transition) {
+      throw new Error(`Transition "${transitionName}" not found for ${issueKey}`);
     }
+
+    await this.request(`/issue/${issueKey}/transitions`, {
+      method: 'POST',
+      body: JSON.stringify({ transition: { id: transition.id } }),
+    });
   }
 
-  async dispose(): Promise<void> {
-    await this.client.dispose();
+  async findExistingDefect(
+    sourceTicketKey: string,
+    errorSignature: string
+  ): Promise<JiraIssue | null> {
+    const jql = `project = ${sourceTicketKey.split('-')[0]} AND labels = auto-generated AND labels = qa-pipeline AND summary ~ "${errorSignature}" ORDER BY created DESC`;
+    const result = await this.searchIssues(jql, 5);
+    return result.issues[0] ?? null;
   }
 }

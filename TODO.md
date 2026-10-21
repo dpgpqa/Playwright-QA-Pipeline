@@ -1,155 +1,86 @@
-# TODO — Adapt the Template Checklist
+# Adapt-the-Template Checklist
 
-Use this checklist when adopting the template for your own app. Check off each item as you complete it.
+Replace demo app (SauceDemo) with your app.
 
-## 🎯 Immediate (Before First Push)
+## 1. Environment & Config
 
-- [ ] **Rename repo** — Update `package.json` name, README badges
-- [ ] **Update `.env.example`** — Add your app's BASE_URLs, remove unused targets
-- [ ] **Configure GitHub Secrets** — All required secrets from `SECURITY.md`
-- [ ] **Enable GitHub Actions** — Settings → Actions → General
-- [ ] **Set branch protection** — main branch, required checks
-- [ ] **Run `npm install && npx playwright install --with-deps chromium`**
-- [ ] **Run `npm run test:smoke`** — Verify pipeline works against demo sites
-- [ ] **Push to your GitHub** — Verify CI passes
+- [ ] Update `BASE_URL` in `.env.example` and GitHub secret
+- [ ] Update credentials in `.env.example` and GitHub secrets
+- [ ] Update `lighthouserc.yml` performance budgets
+- [ ] Update `.zap/rules.tsv` for your app's security rules
+- [ ] Verify `playwright.config.ts` projects match your browser matrix
 
-## 🏗️ Replace Demo Page Objects
+## 2. Page Objects (`src/pages/`)
 
-- [ ] **Delete `src/pages/saucedemo/`** — Replace with your app's pages
-- [ ] **Delete `src/pages/the-internet/`** — Replace with your app's pages
-- [ ] **Delete `src/pages/demoqa/`** — Replace with your app's pages
-- [ ] **Create your Page Objects** in `src/pages/your-app/`
-  - [ ] Extend `BasePage`
-  - [ ] Private locators only
-  - [ ] Intent-based methods (`login()`, not `fillAndClick()`)
-  - [ ] `waitForLoad()` with reliable indicator
-- [ ] **Update `src/fixtures/base.fixture.ts`** — Register your page objects
-- [ ] **Delete `src/components/saucedemo/`** — Add your shared components
+- [ ] Delete `LoginPage.ts`, `InventoryPage.ts`, `CartPage.ts`, `CheckoutInfoPage.ts`, `CheckoutOverviewPage.ts`, `CheckoutCompletePage.ts`
+- [ ] Create your app's Page Objects (one per page/major flow)
+- [ ] Update `BasePage` if needed (path, waitForLoad strategy)
+- [ ] Update `Header.ts` component or create your shared components
+- [ ] All locators use `getByTestId()` — add `data-test` to your app
+- [ ] Methods = user verbs (`login`, `search`, `purchase`, etc.)
 
-## 🔌 Replace Demo API Clients
+## 3. Fixtures (`src/fixtures/`)
 
-- [ ] **Delete `src/api/RestfulBookerApi.ts`** — Replace with your API client
-- [ ] **Delete `src/api/JsonPlaceholderApi.ts`** — Replace with your API client
-- [ ] **Create typed API wrappers** with zod schemas
-  - [ ] Request/response schemas for each endpoint
-  - [ ] Health check method
-  - [ ] Auth handling (token refresh, etc.)
-- [ ] **Add API fixtures** in `base.fixture.ts` if stateful
+- [ ] Update `base.fixture.ts` with your Page Objects
+- [ ] Verify `global.setup.ts` auth flow matches your app
+- [ ] Update `global.teardown.ts` cleanup if needed
 
-## 📝 Update Test Data
+## 4. API Clients (`src/api/`)
 
-- [ ] **Update `test-data/users.json`** — Your test accounts
-- [ ] **Update `test-data/products.json`** — Your test entities
-- [ ] **Add zod schemas** in `src/utils/testData.ts` loaders
-- [ ] **Create factories** in `src/factories/` for dynamic data
+- [ ] Delete `RestfulBookerApiClient.ts` if not using RestfulBooker
+- [ ] Create typed API clients for your endpoints
+- [ ] Add Zod schemas for request/response validation
 
-## 🧪 Write Your Tests
+## 5. Factories (`src/factories/`)
 
-### Smoke Tests (Critical Path)
+- [ ] Update `userFactory.ts` for your user types
+- [ ] Add factories for your domain entities
+- [ ] All factories validated with Zod schemas
 
-- [ ] Login / authentication
-- [ ] Primary user journey (e.g., purchase, create record, submit form)
-- [ ] Core API health checks
-- [ ] Target: < 2 min total, runs on every push
+## 6. Test Data (`test-data/`)
 
-### Regression Tests (Full Coverage)
+- [ ] Add `users.json`, `products.json`, etc. for static data
+- [ ] Validate with Zod in `src/utils/testData.ts`
 
-- [ ] All CRUD operations
-- [ ] Edge cases (validation, errors, empty states)
-- [ ] Cross-browser (Chromium, Firefox, WebKit)
-- [ ] Mobile viewports
-- [ ] Tag with `@regression`
+## 7. Tests (`tests/`)
 
-### API Tests
+- [ ] Delete `smoke/`, `regression/`, `api/`, `accessibility/`, `visual/` demo tests
+- [ ] Write `@smoke` tests for critical paths (login, core flow)
+- [ ] Write `@regression` tests for full coverage
+- [ ] Write `@api` tests for contract + availability
+- [ ] Write `@a11y` tests for key pages
+- [ ] Write `@visual` tests for key pages (update baselines: `npm run test:visual:update`)
 
-- [ ] Contract tests (schema validation)
-- [ ] Auth scenarios (valid, expired, invalid, missing)
-- [ ] Rate limiting / pagination / filtering
-- [ ] Tag with `@api`
+## 8. Documentation
 
-### Accessibility Tests
+- [ ] Update `GETTING_STARTED.md` with your app details
+- [ ] Update `CLAUDE.md` if POM patterns differ
+- [ ] Update `CONTRIBUTING.md` if standards differ
+- [ ] Fill `docs/contacts.md` with team contacts, Jira keys, escalation
+- [ ] Update `docs/flake-handling.md` with your flake patterns
 
-- [ ] `injectAxe(page)` in beforeEach
-- [ ] `checkA11y(page)` on key pages
-- [ ] Target: WCAG 2.1 AA
-- [ ] Tag with `@a11y`
+## 9. CI/CD
 
-### Visual Tests
+- [ ] Verify `.github/workflows/ci.yml` jobs match your needs
+- [ ] Verify `.github/workflows/security.yml` rules
+- [ ] Verify `.github/workflows/lighthouse.yml` budgets
+- [ ] Add `dependabot.yml` for dependency updates
+- [ ] Add `CODEOWNERS` for auto-reviewer assignment
+- [ ] Add issue/PR templates in `.github/`
 
-- [ ] Baseline screenshots per browser
-- [ ] Key pages: login, dashboard, forms, lists
-- [ ] Update via `npm run test:visual:update`
-- [ ] Tag with `@visual`
+## 10. Integrations
 
-## 🔧 Configuration
+- [ ] Add `JiraApi.ts` if using Jira
+- [ ] Configure `.mcp.json` for AI browser control
+- [ ] Add Slack webhook secret for notifications
+- [ ] Set up branch protection rules
 
-- [ ] **Update `playwright.config.ts`**
-  - [ ] Projects (browsers, viewports)
-  - [ ] Timeouts for your app
-  - [ ] `baseURL` from env
-  - [ ] Reporter settings
-- [ ] **Update `lighthouserc.yml`** — Performance budgets for your app
-- [ ] **Update `.zap/rules.tsv`** — Remove demo exclusions, add your rules
-- [ ] **Update `.github/dependabot.yml`** — Your review/assignment preferences
+## 11. Final Verification
 
-## 📚 Documentation
-
-- [ ] **Update `README.md`** — Your app, targets, badges
-- [ ] **Update `GETTING_STARTED.md`** — Your setup steps
-- [ ] **Update `CLAUDE.md`** — Any project-specific rules
-- [ ] **Update `CONTRIBUTING.md`** — Your workflow
-- [ ] **Update `SECURITY.md`** — Your contacts, threat model
-- [ ] **Create `docs/contacts.md`** — Team, escalation, Jira keys, token rotation
-- [ ] **Create `docs/flake-handling.md`** — Your flake taxonomy
-
-## 🛡️ Security Hardening
-
-- [ ] **Rotate demo credentials** — Use dedicated test accounts
-- [ ] **Scope test accounts** — Minimal permissions, no prod access
-- [ ] **Enable Dependabot alerts** — Settings → Security
-- [ ] **Enable CodeQL** — Default on, verify in Security tab
-- [ ] **Review ZAP rules** — Remove demo exclusions
-- [ ] **Set Lighthouse budgets** — Realistic for your app
-
-## 🚀 CI/CD Polish
-
-- [ ] **Add Slack/Discord notifications** — `SLACK_WEBHOOK_URL` secret
-- [ ] **Add Jira integration** — If using `agents/jira-qa-runner.md`
-- [ ] **Configure merge queue** — If high PR volume
-- [ ] **Add deployment gates** — Staging → Production
-- [ ] **Set up scheduled regression** — Nightly cron in `ci.yml`
-
-## 🧹 Cleanup
-
-- [ ] **Remove unused target tests** — `tests/saucedemo/`, `tests/the-internet/`, etc.
-- [ ] **Remove unused API tests** — `tests/restful-booker/`, `tests/jsonplaceholder/`
-- [ ] **Remove unused demo data** — `test-data/` files you don't need
-- [ ] **Remove demo references** from README, docs, comments
-
-## ✅ Verification
-
-- [ ] `npm run typecheck` — Passes
-- [ ] `npm run lint` — Passes
-- [ ] `npm run format:check` — Passes
-- [ ] `npm run test:smoke` — Passes on your app
-- [ ] `npm run test:regression` — Passes (or known failures documented)
-- [ ] `npm run test:api` — Passes
-- [ ] `npm run test:a11y` — Passes (or known issues documented)
-- [ ] `npm run test:visual` — Passes (baselines created)
-- [ ] CI pipeline — Green on push to main
-- [ ] Security workflow — No critical findings
-
-## 📦 Optional Enhancements
-
-- [ ] **Add contract testing** — Pact or similar
-- [ ] **Add load testing** — k6 or Artillery
-- [ ] **Add contract testing** — Pact or similar
-- [ ] **Add mutation testing** — Stryker
-- [ ] **Add test case management** — Jira Xray, TestRail sync
-- [ ] **Add dashboards** — Grafana + Playwright reporter
-- [ ] **Add self-healing** — Extend `agents/triage.md`
-- [ ] **Add AI test generation** — Extend `agents/test-writer.md`
-
----
-
-**Tip**: Keep this file updated as you adapt. Delete items that don't apply, add your own.
+- [ ] `npm run typecheck` passes
+- [ ] `npm run lint` passes
+- [ ] `npm run format:check` passes
+- [ ] `npm run test:smoke` passes locally
+- [ ] Push to main — all CI jobs pass
+- [ ] Visual baselines committed
+- [ ] No secrets in repo (run `gitleaks detect`)

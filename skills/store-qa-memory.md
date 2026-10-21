@@ -1,61 +1,42 @@
 ---
 name: store-qa-memory
-description: Persist selector/flake patterns to Claude memory
+description: Persist QA patterns to memory for future runs
 ---
 
 # Store QA Memory Skill
 
-Persist selector/flake patterns to Claude memory for future reference.
+Atomic capability: save learned patterns.
 
 ## What to Store
 
-- **Selector fixes** — original → fixed mapping
-- **Flake patterns** — test name, failure type, fix applied
-- **Environment quirks** — timing issues, race conditions per env
-- **Page object patterns** — reusable locator strategies
+| Pattern Type  | Example                                                               |
+| ------------- | --------------------------------------------------------------------- |
+| Selector fix  | "Login button changed from `#login` to `data-test=login-submit`"      |
+| Flake pattern | "Cart page loads slow on Firefox CI, need +10s timeout"               |
+| Timing adjust | "API `/checkout` takes 15-45s, use `expect.poll({ timeout: 60000 })`" |
+| Data pattern  | "User factory needs `isActive: true` for new auth flow"               |
+
+## Storage
+
+- Project memory: `.claude/memory/` or skill-specific
+- User memory: global preferences
+- Session memory: current run patterns
 
 ## Format
 
 ```json
 {
-  "selectorFixes": [
-    {
-      "original": "page.locator('.btn-primary')",
-      "fixed": "page.getByRole('button', { name: 'Submit' })",
-      "page": "CheckoutPage",
-      "date": "2024-01-15"
-    }
-  ],
-  "flakePatterns": [
-    {
-      "test": "Checkout with invalid card",
-      "failure": "TimeoutError: locator.fill: Timeout 15000ms exceeded",
-      "fix": "Changed to getByLabel('Card number')",
-      "env": "staging",
-      "date": "2024-01-15"
-    }
-  ],
-  "envQuirks": [
-    {
-      "env": "staging",
-      "issue": "Payment API takes 3-5s to respond under load",
-      "workaround": "Increased navigationTimeout to 30s for checkout flow",
-      "date": "2024-01-15"
-    }
-  ]
+  "pattern": "selector-fix",
+  "context": "LoginPage.login()",
+  "old": "page.getByTestId('login-button')",
+  "new": "page.getByTestId('login-submit')",
+  "date": "2026-01-15",
+  "ticket": "PROJ-123"
 }
 ```
 
-## Usage
+## Retrieval
 
-```
-Use skills/store-qa-memory to persist selector/flake patterns from PROJ-123 run
-```
-
-## Storage
-
-Stored in Claude's persistent memory for this project. Available in future sessions for:
-
-- Faster self-heal on similar failures
-- Consistent selector patterns across team
-- Environment-specific timing workarounds
+- Agents read memory on startup
+- `pom-builder` checks for known selector changes
+- `triage` checks for known flake patterns

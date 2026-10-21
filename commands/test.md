@@ -1,56 +1,58 @@
 ---
 name: test
-description: Full test run playbook
+description: Full test suite run playbook
 ---
 
-# Full Test Run
+# Test Command Playbook
 
-Run the complete test suite with all layers.
+Run the complete test suite with reporting.
 
-## Commands
+## Steps
 
-```bash
-# Full suite, all browsers
-npm test
+1. **Pre-checks**
 
-# Or step by step
-npm run typecheck && npm run lint && npm run test:smoke
-npm run test:regression
-npm run test:api
-npm run test:a11y
-npm run test:visual
-npm run report:merge
-npm run report
-```
+   ```bash
+   npm run typecheck && npm run lint && npm run format:check
+   ```
+
+2. **Run all layers**
+
+   ```bash
+   npm test
+   # Or per layer:
+   npm run test:smoke
+   npm run test:regression
+   npm run test:api
+   npm run test:a11y
+   npm run test:visual
+   ```
+
+3. **View report**
+
+   ```bash
+   npm run report
+   ```
+
+4. **Merge sharded reports (CI)**
+   ```bash
+   npm run report:merge
+   ```
 
 ## CI Equivalent
 
 The `ci.yml` workflow runs:
 
-1. `lint-and-typecheck` (typecheck + eslint + prettier)
-2. `test-smoke` + `test-api` (sharded, parallel)
-3. `merge-smoke-report` (blob → HTML + JSON)
-4. `test-regression` (nightly + main, cross-browser)
-5. `test-accessibility` + `test-visual`
-6. `merge-reports` (all blob reports → single HTML)
-7. `notify` (Slack on failure)
+- `lint-and-typecheck` → parallel test jobs → `merge-reports` → `notify`
 
-## Local Debugging
+## Debugging
 
 ```bash
-# UI mode (interactive)
-npm run test:ui
-
-# Debug specific test
-npm run test:debug -- --grep "test name"
-
-# Headed browser
+# Headed mode
 npm run test:headed
 
-# Repeat for flake reproduction
-npx playwright test --repeat-each 5 --grep "test name"
+# Debug mode
+npm run test:debug
 
-# Trace on failure
-npx playwright test --trace on
-npx playwright show-trace test-results/<test>/trace.zip
+# Specific test
+npx playwright test --grep "test name" --project=chromium --headed
 ```

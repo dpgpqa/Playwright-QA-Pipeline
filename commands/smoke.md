@@ -1,48 +1,26 @@
 ---
 name: smoke
-description: Quick smoke check playbook
+description: Quick smoke test run
 ---
 
-# Quick Smoke Check
+# Smoke Command Playbook
 
-Run smoke tests for fast feedback (< 2 min).
+Fast feedback — run only `@smoke` tests.
 
-## Commands
+## Run
 
 ```bash
-# Smoke only — chromium
 npm run test:smoke
-
-# With specific test
-npm run test:smoke -- --grep "login"
-
-# Repeat for flake check
-npx playwright test --grep @smoke --repeat-each 3
 ```
-
-## What Runs
-
-- `@smoke` tagged tests only
-- Chromium only (fastest)
-- 2 workers (parallel)
-- Critical paths: login, primary user journey, API health
 
 ## Expected
 
-- 4-6 tests
-- < 30s each
-- < 2 min total
-- Runs on every push + PR
+- ~3 tests
+- < 30 seconds locally
+- Runs on every push in CI
 
-## If Failures
+## When to Use
 
-```bash
-# Debug with UI
-npm run test:ui -- --grep @smoke
-
-# Debug specific
-npm run test:debug -- --grep "test name"
-
-# Trace on failure
-npx playwright test --grep @smoke --trace on
-```
+- Pre-push validation
+- Quick CI check
+- Post-deploy sanity check

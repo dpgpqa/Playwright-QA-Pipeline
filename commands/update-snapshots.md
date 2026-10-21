@@ -3,54 +3,37 @@ name: update-snapshots
 description: Update visual regression baselines
 ---
 
-# Update Visual Snapshots
+# Update Snapshots Command Playbook
 
-Regenerate per-browser visual baselines.
+Regenerate visual test baselines.
 
-## Commands
+## Run
 
 ```bash
-# Update all browsers (run sequentially)
-npm run test:visual:update -- --project=chromium
-npm run test:visual:update -- --project=firefox
-npm run test:visual:update -- --project=webkit
-
-# Or use the script
 npm run test:visual:update
 ```
 
-## Process
+## What It Does
 
-1. **Run update** — creates new baseline images in `tests/visual/snapshots/<browser>/`
-2. **Review diffs** — `npm run report` to compare old vs new
-3. **Commit baselines** — `git add tests/visual/snapshots/ && git commit`
+- Runs `@visual` tests with `--update-snapshots`
+- Updates baseline images in `tests/visual/`
+- Only for `chromium` by default (CI uses all 3 browsers)
 
-## Baseline Convention
+## When to Use
 
-```
-tests/visual/snapshots/
-├── chromium/
-│   ├── login-page.png
-│   └── dashboard-page.png
-├── firefox/
-│   ├── login-page.png
-│   └── dashboard-page.png
-└── webkit/
-    ├── login-page.png
-    └── dashboard-page.png
-```
+- Intentional UI changes
+- New visual tests added
+- Baseline updates after browser version upgrade
 
-## When to Update
+## Workflow
 
-- Intentional UI changes (new feature, redesign)
-- Baseline drift (font rendering, browser updates)
-- New browser version in CI
+1. Make UI changes
+2. Run `npm run test:visual:update`
+3. Review diff in Playwright report
+4. Commit updated baselines
+5. Push — CI will use new baselines
 
-## Threshold
+## Cross-Browser
 
-Configured in `playwright.config.ts`:
-
-- `maxDiffPixels: 100`
-- `threshold: 0.2`
-
-Adjust per-project as needed.
+CI generates baselines per browser (`-chromium.png`, `-firefox.png`, `-webkit.png`).
+Local update only affects the project you run (default: chromium).

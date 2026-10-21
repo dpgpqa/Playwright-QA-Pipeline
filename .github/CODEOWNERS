@@ -1,46 +1,36 @@
-# Code Owners
+# Global owners
+* @zaito
 
-# Global
-* @diegozaito
-
-# QA Infrastructure
-/.github/workflows/ @diegozaito
-/playwright.config.ts @diegozaito
-/lighthouserc.yml @diegozaito
-/eslint.config.mjs @diegozaito
-/tsconfig.json @diegozaito
-/package.json @diegozaito
-/src/fixtures/ @diegozaito
-/src/utils/ @diegozaito
-/src/factories/ @diegozaito
-
-# Page Objects
-/src/pages/ @diegozaito
-
-# Components
-/src/components/ @diegozaito
+# Page Objects & Components
+/src/pages/ @zaito
+/src/components/ @zaito
 
 # API Clients
-/src/api/ @diegozaito
+/src/api/ @zaito
+
+# Fixtures & Auth
+/src/fixtures/ @zaito
+
+# Factories & Test Data
+/src/factories/ @zaito
+/test-data/ @zaito
 
 # Tests
-/tests/smoke/ @diegozaito
-/tests/regression/ @diegozaito
-/tests/api/ @diegozaito
-/tests/accessibility/ @diegozaito
-/tests/visual/ @diegozaito
+/tests/ @zaito
 
-# Agents & Skills
-/agents/ @diegozaito
-/skills/ @diegozaito
-/commands/ @diegozaito
+# CI/CD
+/.github/workflows/ @zaito
 
-# Documentation
-/docs/ @diegozaito
-/CLAUDE.md @diegozaito
-/CONTRIBUTING.md @diegozaito
-/SECURITY.md @diegozaito
+# Config
+/playwright.config.ts @zaito
+/tsconfig.json @zaito
+/eslint.config.mjs @zaito
+/.prettierrc @zaito
 
 # Security
-/.github/dependabot.yml @diegozaito
-/.zap/ @diegozaito
+/.zap/ @zaito
+/lighthouserc.yml @zaito
+
+# Documentation
+/*.md @zaito
+/docs/ @zaito

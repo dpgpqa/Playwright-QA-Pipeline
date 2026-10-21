@@ -1,81 +1,27 @@
 ---
 name: create-page-object
-description: Create new Page Object class
+description: Create a new Page Object class
 ---
 
 # Create Page Object Skill
 
-Create a new Page Object following repo patterns.
+Atomic capability: create one Page Object class.
 
-## Steps
+## Input
 
-1. **Create file** in `src/pages/YourPage.ts` (or `src/components/`)
-2. **Extend `BasePage`** for full pages
-3. **Private locators only** — never exposed to tests
-4. **Implement `waitForLoad()`** — assert readiness with `waitFor`, not `expect`
-5. **Intent-based methods** — `login()`, not `clickLoginButton()`
-6. **No `expect()` in POM** — assertions belong in tests
-7. **Register fixture** in `src/fixtures/base.fixture.ts`
+- Page name / URL path
+- Key user actions
+- Locator strategy (prefer `data-test`)
 
-## Template
+## Output
 
-```typescript
-// src/pages/YourPage.ts
-import { BasePage } from '../BasePage';
-
-export class YourPage extends BasePage {
-  protected readonly path = '/your-path';
-
-  private readonly submitButton = this.page.getByRole('button', { name: 'Submit' });
-  private readonly successMessage = this.page.getByTestId('success-message');
-
-  async waitForLoad(): Promise<void> {
-    await this.submitButton.waitFor({ state: 'visible' });
-  }
-
-  async submitForm(data: FormData): Promise<void> {
-    await this.page.getByLabel('Email').fill(data.email);
-    await this.page.getByLabel('Password').fill(data.password);
-    await this.submitButton.click();
-  }
-
-  async getSuccessMessage(): Promise<string> {
-    return (await this.successMessage.textContent()) ?? '';
-  }
-}
-```
-
-## Component Template (for reusable UI)
-
-```typescript
-// src/components/YourComponent.ts
-import { Page } from '@playwright/test';
-
-export class YourComponent {
-  private readonly closeButton = this.page.getByRole('button', { name: 'Close' });
-
-  constructor(private readonly page: Page) {}
-
-  async close(): Promise<void> {
-    await this.closeButton.click();
-  }
-}
-```
-
-## Register Fixture
-
-```typescript
-// src/fixtures/base.fixture.ts
-yourPage: async ({ page }, use) => {
-  await use(new YourPage(page));
-},
-```
+- Page Object file in `src/pages/`
+- Fixture registration in `base.fixture.ts`
 
 ## Rules
 
-- Locators: `private readonly`
-- Methods: user intent names
-- `waitForLoad()` required
+- Extend `BasePage`
+- Private locators only
+- Methods = user verbs
 - No `expect()` in POM
-- No CSS/XPath selectors
-- Run `npm run typecheck && npm run lint`
+- Use `getByTestId()`

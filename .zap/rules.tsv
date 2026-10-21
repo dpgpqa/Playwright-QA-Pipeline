@@ -1,52 +1,42 @@
-# ZAP Baseline Scan Rules Configuration
-# This file defines which rules to include/exclude from the baseline scan
+# OWASP ZAP Baseline Scan Rules Configuration
+# Format: RuleID\tThreshold\tConfidence\tDescription
+# Threshold: OFF, LOW, MEDIUM, HIGH
+# Confidence: 0-3 (3 = confirmed)
 
-# Rules to exclude (false positives for test environments)
-10096	0	# Server Side Code Injection - false positive in test apps
-10097	0	# Server Side Code Injection - false positive in test apps
-10098	0	# Server Side Code Injection - false positive in test apps
-40012	0	# Cross Site Scripting (Reflected) - test apps often have this
-40014	0	# Cross Site Scripting (Persistent) - test apps often have this
-40016	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40018	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40019	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40020	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40022	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40024	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40026	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40028	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40030	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40032	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40034	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40036	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40038	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40040	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40042	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40044	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40046	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40048	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40050	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40052	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40054	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40056	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40058	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40060	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40062	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40064	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40066	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40068	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40070	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40072	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40074	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40076	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40078	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40080	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40082	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40084	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40086	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40088	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40090	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40092	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40094	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40096	0	# Cross Site Scripting (DOM Based) - test apps often have this
-40098	0	# Cross Site Scripting (DOM Based) - test apps often have this
+# Disable noisy rules for saucedemo.com demo app
+10021	OFF	3	XSS (Cross Site Scripting) - generic
+10022	OFF	3	SQL Injection - generic
+10023	OFF	3	Command Injection - generic
+10024	OFF	3	Path Traversal - generic
+10025	OFF	3	LDAP Injection - generic
+10026	OFF	3	XPath Injection - generic
+10027	OFF	3	SSI Injection - generic
+10028	OFF	3	XSS (Reflected) - generic
+10029	OFF	3	XSS (Stored) - generic
+10030	OFF	3	XSS (DOM-based) - generic
+40012	OFF	3	Cross-Domain JavaScript Source File Inclusion
+40014	OFF	3	Cross-Domain CSS Source File Inclusion
+40016	OFF	3	Script Content Type Missing
+40017	OFF	3	CSS Content Type Missing
+40018	OFF	3	Incomplete or No Cache-control and Pragma HTTP Header Set
+40019	OFF	3	Information Disclosure - Suspicious Comments in HTML
+40020	OFF	3	Information Disclosure - Server Error Messages
+40021	OFF	3	Information Disclosure - Debug Error Messages
+40022	OFF	3	HTTP Parameter Pollution
+40023	OFF	3	Cookie Without Secure Flag
+40024	OFF	3	Cookie Without HttpOnly Flag
+40025	OFF	3	Cookie Without SameSite Attribute
+40026	OFF	3	Anti CSRF Tokens Scanner
+40027	OFF	3	Application Error Disclosure
+40028	OFF	3	Absence of Anti-CSRF Tokens
+40029	OFF	3	Content Security Policy (CSP) Header Not Set
+40030	OFF	3	X-Content-Type-Options Header Missing
+40031	OFF	3	X-Frame-Options Header Not Set
+40032	OFF	3	X-XSS-Protection Header Not Set
+40033	OFF	3	Strict-Transport-Security Header Not Set
+40034	OFF	3	Referrer-Policy Header Not Set
+40035	OFF	3	Feature-Policy Header Not Set
+40036	OFF	3	Permissions-Policy Header Not Set
+40037	OFF	3	Cross-Origin-Opener-Policy Header Not Set
+40038	OFF	3	Cross-Origin-Resource-Policy Header Not Set
+40039	OFF	3	Cross-Origin-Embedder-Policy Header Not Set

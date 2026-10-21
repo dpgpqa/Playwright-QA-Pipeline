@@ -1,90 +1,55 @@
 ---
 name: new-page
-description: Create new Page Object playbook
+description: Create a new page object and test from scratch
 ---
 
-# Create New Page Object
+# New Page Command Playbook
 
-Step-by-step playbook for adding a new page to the test suite.
+End-to-end: create Page Object → fixture → test.
 
 ## Steps
 
-```bash
-# 1. Create Page Object
-# src/pages/YourPage.ts
-# Extend BasePage, private locators, intent methods, waitForLoad()
+1. **Create Page Object**
 
-# 2. Register fixture
-# src/fixtures/base.fixture.ts
-# yourPage: async ({ page }, use) => { await use(new YourPage(page)); }
+   ```bash
+   # Use pom-builder agent or manually:
+   # src/pages/YourPage.ts
+   ```
 
-# 3. Write tests
-# tests/regression/your-feature.spec.ts
-# Import from @fixtures/base.fixture
-# Tag with @smoke or @regression
+2. **Register Fixture**
 
-# 4. Run gates
-npm run typecheck && npm run lint && npm run test:smoke
+   ```typescript
+   // src/fixtures/base.fixture.ts
+   yourPage: async ({ page }, use) => {
+     await use(new YourPage(page));
+   },
+   ```
 
-# 5. Commit
-git add src/pages/YourPage.ts src/fixtures/base.fixture.ts tests/regression/your-feature.spec.ts
-git commit -m "feat(pom): add YourPage for your-feature"
-```
+3. **Write Test**
 
-## Template
+   ```typescript
+   // tests/your-feature/feature.spec.ts
+   import { test, expect } from '@fixtures/base.fixture';
 
-```typescript
-// src/pages/YourPage.ts
-import { BasePage } from '../BasePage';
+   test.describe('Your Feature', () => {
+     test('@smoke Happy path', async ({ yourPage }) => {
+       await yourPage.goto();
+       // ...
+     });
+   });
+   ```
 
-export class YourPage extends BasePage {
-  protected readonly path = '/your-path';
+4. **Run & Verify**
+   ```bash
+   npm run test:smoke -- --grep "Your Feature"
+   ```
 
-  private readonly submitButton = this.page.getByRole('button', { name: 'Submit' });
-  private readonly successMessage = this.page.getByTestId('success-message');
+## Checklist
 
-  async waitForLoad(): Promise<void> {
-    await this.submitButton.waitFor({ state: 'visible' });
-  }
-
-  async submitForm(data: FormData): Promise<void> {
-    await this.page.getByLabel('Email').fill(data.email);
-    await this.page.getByLabel('Password').fill(data.password);
-    await this.submitButton.click();
-  }
-
-  async getSuccessMessage(): Promise<string> {
-    return (await this.successMessage.textContent()) ?? '';
-  }
-}
-```
-
-## Fixture Registration
-
-```typescript
-// src/fixtures/base.fixture.ts
-yourPage: async ({ page }, use) => {
-  await use(new YourPage(page));
-},
-```
-
-## Test Template
-
-```typescript
-// tests/regression/your-feature.spec.ts
-import { test, expect } from '@fixtures/base.fixture';
-
-test.describe('Your Feature', () => {
-  test('@regression Happy path', async ({ yourPage }) => {
-    await yourPage.goto();
-    await yourPage.submitForm({ email: 'test@example.com', password: 'secret' });
-    expect(await yourPage.getSuccessMessage()).toContain('Welcome');
-  });
-});
-```
-
-## Gates
-
-```bash
-npm run typecheck && npm run lint && npm run test:smoke
-```
+- [ ] Page Object extends `BasePage`
+- [ ] Private locators only
+- [ ] Methods = user verbs
+- [ ] `waitForLoad()` waits for reliable indicator
+- [ ] Fixture registered
+- [ ] Test tagged correctly
+- [ ] Uses factories for data

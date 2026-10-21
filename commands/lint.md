@@ -1,47 +1,39 @@
 ---
 name: lint
-description: Lint and format check playbook
+description: Run linting and formatting
 ---
 
-# Lint & Format
+# Lint Command Playbook
 
-Run all code quality checks.
+Code quality gates.
 
-## Commands
+## Run
 
 ```bash
-# TypeCheck (TypeScript)
-npm run typecheck
-
-# Lint (ESLint)
+# Lint only
 npm run lint
-npm run lint:fix          # auto-fix
 
-# Format (Prettier)
-npm run format            # write
-npm run format:check      # check only
+# Lint + auto-fix
+npm run lint:fix
 
-# All gates (pre-push equivalent)
-npm run typecheck && npm run lint && npm run format:check
+# Format check
+npm run format:check
+
+# Format + write
+npm run format
 ```
-
-## CI Gates
-
-The `lint-and-typecheck` job runs all three:
-
-- `tsc --noEmit` — strict mode, no errors
-- `eslint .` — no violations
-- `prettier --check .` — consistent formatting
 
 ## Pre-commit Hook
 
-Automatic via husky + lint-staged:
+Runs automatically on `git commit`:
 
-- `eslint --fix` + `prettier --write` on staged files
+- `eslint --fix` on TS/JS
+- `prettier --write` on TS/JS/JSON/YAML/MD
 
-## Skip (Emergency Only)
+## Pre-push Hook
 
-```bash
-git commit --no-verify
-# CI will catch you — don't make this a habit
-```
+Runs automatically on `git push`:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:smoke`

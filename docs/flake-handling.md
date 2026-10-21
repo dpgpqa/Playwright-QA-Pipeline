@@ -1,58 +1,92 @@
-# Flake Handling Playbook
+# Flake Handling
 
-Taxonomy and playbook for handling flaky tests.
+Taxonomy, playbook, and tooling for flaky tests.
 
 ## Flake Taxonomy
 
-| Type       | Symptom                          | Root Cause                     | Fix                    |
-| ---------- | -------------------------------- | ------------------------------ | ---------------------- |
-| **Timing** | Assertion fails, passes on retry | State takes time to converge   | `expect.poll(...)`     |
-| **Slow**   | Test exceeds 30s but passes      | Large upload, video, long flow | `test.slow()`          |
-| **Race**   | Intermittent, non-deterministic  | Shared state, CSRF, rate limit | `@quarantine` + ticket |
-| **Env**    | Passes locally, fails CI         | Network, browser, config diff  | Not flake — env issue  |
-| **Real**   | Fails on retry, passes re-run    | Genuine non-determinism        | Investigate            |
+| Category        | Signal                           | Example                         |
+| --------------- | -------------------------------- | ------------------------------- |
+| **Timing**      | `TimeoutError`, intermittent     | Element not ready, API slow     |
+| **Selector**    | `Element not found`, strict mode | UI changed, dynamic IDs         |
+| **State**       | Data-dependent, order-dependent  | Cart not empty, user logged in  |
+| **Environment** | Network, CI resource contention  | DNS, rate limits, slow disk     |
+| **Concurrency** | Parallel test interference       | Shared auth state, localStorage |
 
-## Tools
+## Playbook
 
-| Symptom          | Tool                                        |
-| ---------------- | ------------------------------------------- |
-| Assertion flakes | `expect.poll(() => condition).toBeTruthy()` |
-| Slow test        | `test.slow()`                               |
-| Known race       | `@quarantine` + GitHub issue                |
-| Env issue        | Fix CI config / network                     |
-| Real flake       | Investigate — add trace, logs               |
+### 1. Detect
 
-## Self-Heal (One Attempt Max)
+- CI: `continue-on-error: true` on visual/regression
+- Local: `npm run test:smoke` — flakes rarely appear locally
+- Metrics: Track flake rate per test (target: < 1%)
+
+### 2. Classify
+
+Use `analyze-failure` skill to categorize.
+
+### 3. Fix (Priority Order)
+
+| Priority | Action                                                                    |
+| -------- | ------------------------------------------------------------------------- |
+| 1        | **Selector fix** — Update POM locator (use `generate-locator` skill)      |
+| 2        | **Timing fix** — `expect.poll()`, increase timeout, wait for network idle |
+| 3        | **State fix** — Better fixtures, `storageState`, `global.setup` reset     |
+| 4        | **Environment fix** — Retry logic, longer timeouts, mock external deps    |
+| 5        | **Quarantine** — Tag `@quarantine`, document, exclude from CI             |
+
+### 4. Quarantine Process
 
 ```typescript
-// ❌ Before
-await page.locator('.btn-primary').click();
-
-// ✅ After: semantic selector
-await page.getByRole('button', { name: 'Submit' }).click();
-
-// ✅ Timing fix
-await expect.poll(() => api.getStatus()).toBe('ready');
+// Tag the test
+test('@quarantine @regression Flaky checkout', async ({ ... }) => {
+  // ...
+});
 ```
 
-## Quarantine Process
+Document in this file:
 
-1. **Add `@quarantine` tag** to test title
-2. **Create GitHub issue** with `flake` label
-3. **Reference in test**: `@quarantine Flaky on CI — see #123`
-4. **Runs in non-blocking quarantine job** (auto-skipped when empty)
+```markdown
+## Quarantined Tests
 
-## Prevention
+| Test                             | Tagged     | Reason            | Owner  | Target Fix |
+| -------------------------------- | ---------- | ----------------- | ------ | ---------- |
+| @regression Checkout with coupon | 2026-01-15 | API latency > 30s | @zaito | 2026-02-01 |
+```
 
-- **No `waitForTimeout`** — only semantic waits
-- **No CSS/XPath** — semantic selectors only
-- **Worker-scoped auth** — no shared session state
-- **Factory data** — isolated per test
-- **Reset app state** after each test
-- **Trace on failure** — `npx playwright test --trace on`
+### 5. Self-Heal (Automated)
 
-## Review
+- `self-heal-test` skill: one attempt on CI failure
+- Only selector/timing fixes
+- Logs all attempts
+- Human review required after
 
-- Monthly flake review in team sync
-- Close fixed issues, update playbook
-- Track flake rate (target: < 1%)
+## Tooling
+
+| Tool                    | Purpose                                          |
+| ----------------------- | ------------------------------------------------ |
+| `expect.poll()`         | Async assertions with retry                      |
+| `test.slow()`           | Triple timeout for known-slow tests              |
+| `test.retry()`          | CI-only retries (config in playwright.config.ts) |
+| `@quarantine` tag       | Exclude from required CI checks                  |
+| `analyze-failure` skill | Classify and recommend fix                       |
+| `self-heal-test` skill  | One-attempt auto-fix                             |
+
+## Configuration
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  retries: process.env.CI ? 2 : 0, // CI-only retries
+  timeout: 30000,
+  expect: { timeout: 5000 },
+});
+```
+
+## Metrics Dashboard (Future)
+
+Track per-test:
+
+- Flake rate (failures / runs)
+- Mean time to fix
+- Quarantine duration
+- Self-heal success rate

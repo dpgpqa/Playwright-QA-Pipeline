@@ -1,141 +1,85 @@
 # Security
 
-## Reporting Vulnerabilities
+## Threat Model
 
-**Do not open public issues for security vulnerabilities.**
+This pipeline targets **your application** — not the pipeline itself. The pipeline is a build-time tool.
 
-Email: security@your-domain.com (replace with your contact)
+### Assets to Protect
 
-Include:
+| Asset                               | Protection                          |
+| ----------------------------------- | ----------------------------------- |
+| Application credentials             | GitHub Secrets (never in code)      |
+| Test data (PII)                     | Factories generate synthetic data   |
+| CI artifacts (reports, screenshots) | 14-30 day retention, no secrets     |
+| Source code                         | CodeQL, gitleaks, dependency review |
 
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+### Attack Vectors & Mitigations
 
-We aim to respond within 48 hours and patch within 7 days for critical issues.
+| Vector         | Mitigation                                       |
+| -------------- | ------------------------------------------------ |
+| Secret leakage | gitleaks pre-commit + CI, no `.env.local` in git |
+| Supply chain   | npm audit, dependency-review on PR, Dependabot   |
+| SAST           | CodeQL on every push/PR                          |
+| DAST           | OWASP ZAP baseline scan on every push/PR         |
+| Malicious PR   | Required reviews, status checks, CODEOWNERS      |
 
-## Secret Handling
-
-### Local Development
-
-- `.env.local` for secrets (gitignored)
-- Never commit `.env.local` or any file with secrets
-- Use `dotenv` to load — no hardcoded values
-
-### CI/CD (GitHub Actions)
-
-- Store secrets in **Settings → Secrets → Actions**
-- Reference as `${{ secrets.SECRET_NAME }}` in workflows
-- Never log secrets — GitHub masks them automatically
+## Secrets Management
 
 ### Required Secrets
 
-| Secret                     | Description              |
-| -------------------------- | ------------------------ |
-| `SAUCEDEMO_USERNAME`       | Test account username    |
-| `SAUCEDEMO_PASSWORD`       | Test account password    |
-| `RESTFUL_BOOKER_BASE_URL`  | API base URL             |
-| `THE_INTERNET_BASE_URL`    | App base URL             |
-| `JSONPLACEHOLDER_BASE_URL` | API base URL             |
-| `DEMOQA_BASE_URL`          | App base URL             |
-| `SLACK_WEBHOOK_URL`        | (Optional) Alert webhook |
-| `LHCI_GITHUB_APP_TOKEN`    | (Optional) Lighthouse CI |
+| Secret               | Scope            | Rotation   |
+| -------------------- | ---------------- | ---------- |
+| `TEST_USER_PASSWORD` | App credentials  | Per policy |
+| `SLACK_WEBHOOK_URL`  | Notifications    | Per policy |
+| `JIRA_API_TOKEN`     | Jira integration | Per policy |
 
-## Threat Model
+### Never Commit
 
-### Assets
+- `.env.local` (gitignored)
+- Any `.auth/` files (gitignored)
+- API keys, tokens, passwords in any file
 
-- Test credentials (low privilege, demo accounts)
-- Test data (synthetic, no PII)
-- CI/CD pipeline integrity
-- Artifact reports (screenshots, traces)
+## Reporting Vulnerabilities
 
-### Threats
+**Do not open public issues** for security vulnerabilities.
 
-| Threat                          | Likelihood | Impact | Mitigation                             |
-| ------------------------------- | ---------- | ------ | -------------------------------------- |
-| Secret leakage in repo          | Low        | High   | gitleaks + pre-commit + .gitignore     |
-| Malicious dependency            | Medium     | High   | CodeQL + dependency-review + npm audit |
-| CI injection                    | Low        | High   | Branch protection + required reviews   |
-| Flaky test masking real failure | Medium     | Medium | Quarantine process + flake handling    |
-| Visual baseline drift           | Medium     | Low    | Per-browser baselines + review         |
+Email: security@your-domain.com
 
-### Boundaries
+Include:
 
-- **Test code** → Runs in isolated browsers, no access to host
-- **CI runners** → Ephemeral, no persistent state
-- **Artifacts** → Stored in GitHub (7-30 day retention)
-- **Secrets** → Never leave GitHub Secrets vault
+- Description of vulnerability
+- Steps to reproduce
+- Impact assessment
+- Suggested fix (if any)
 
-## Security Gates in CI
+We'll acknowledge within 48 hours and coordinate disclosure.
 
-### Every PR
+## Secure Development Practices
 
-- `gitleaks` — Secret scanning
-- `CodeQL` — Static analysis (JS/TS)
-- `dependency-review` — Vulnerable dependencies
-- `npm audit` — High/critical only
+1. **Dependencies**: `npm audit` on every CI, Dependabot auto-PRs
+2. **Static Analysis**: CodeQL on every push/PR
+3. **Secret Scanning**: gitleaks pre-commit + CI
+4. **Dependency Review**: Required on every PR
+5. **DAST**: OWASP ZAP baseline scan on push/PR
+6. **Container**: Not applicable (runs on GitHub-hosted runners)
 
-### Weekly (Monday 2 AM)
+## CI Security Gates
 
-- Full `CodeQL` scan
-- `gitleaks` full history scan
-- `npm audit` all levels
-- OWASP ZAP baseline scan
+| Gate              | Workflow     | Blocks Merge                 |
+| ----------------- | ------------ | ---------------------------- |
+| CodeQL            | security.yml | No (advisory)                |
+| gitleaks          | security.yml | Yes (pre-commit)             |
+| npm audit         | security.yml | Advisory (dev deps allowed)  |
+| Dependency Review | security.yml | Yes (PR only)                |
+| OWASP ZAP         | security.yml | Advisory (continue-on-error) |
 
-### On Release
+## Token Rotation
 
-- All above + Lighthouse CI performance audit
+| Token               | Frequency | Owner     |
+| ------------------- | --------- | --------- |
+| GitHub PAT (CI)     | 90 days   | DevOps    |
+| Slack Webhook       | 180 days  | Team lead |
+| Jira API Token      | 180 days  | QA lead   |
+| npm token (publish) | N/A       | N/A       |
 
-## Dependency Policy
-
-- **Direct deps only** — no transitive pinning
-- **Weekly Dependabot PRs** — grouped by ecosystem
-- **Auto-merge** for patch/minor with passing tests
-- **Manual review** for major versions
-- **Audit** before adding new deps: `npm audit --omit=dev`
-
-## OWASP ZAP Configuration
-
-Baseline scan targets demo sites (known issues excluded in `.zap/rules.tsv`).
-
-For your app:
-
-1. Remove exclusions in `.zap/rules.tsv`
-2. Add authentication script if needed
-3. Configure spider/context in `zaproxy/action-baseline`
-
-## Lighthouse CI Budgets
-
-Defined in `lighthouserc.yml`:
-
-| Category       | Threshold | Action |
-| -------------- | --------- | ------ |
-| Performance    | ≥ 0.5     | Error  |
-| Accessibility  | ≥ 0.9     | Error  |
-| Best Practices | ≥ 0.8     | Error  |
-| SEO            | ≥ 0.7     | Warn   |
-
-Adjust for your app's requirements.
-
-## Incident Response
-
-1. **Detect** — CI failure, security alert, or report
-2. **Assess** — Severity (Critical/High/Medium/Low)
-3. **Contain** — Revoke secrets, disable workflow, block merge
-4. **Remediate** — Patch, rotate, update
-5. **Verify** — Re-run security gates
-6. **Document** — Post-mortem in `docs/incidents/`
-
-## Compliance
-
-This template supports:
-
-- **SOC 2** — Audit trails via GitHub Actions logs
-- **ISO 27001** — Secret management, access control
-- **GDPR** — No PII in test data, synthetic only
-
-## Contact
-
-Security team: security@your-domain.com
+Document rotation in `docs/contacts.md`.
