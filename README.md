@@ -328,10 +328,10 @@ Run: `npx playwright test --grep @smoke`
 graph LR
   A[Push/PR] --> B[Lint & TypeCheck]
   B --> C[Smoke Tests]
-  B --> D[Regression Tests (3 browsers)]
+  B --> D["Regression Tests (3 browsers)"]
   B --> E[API Tests]
   B --> F[Accessibility Tests]
-  B --> G[Visual Tests (3 browsers)]
+  B --> G["Visual Tests (3 browsers)"]
   C --> H[Merge Reports]
   D --> H
   E --> H
