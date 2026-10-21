@@ -11,7 +11,7 @@
 
 An enterprise-grade QA pipeline for SaaS web apps. Clone, point at your app, ship with confidence. E2E · API · Visual · Accessibility · Performance · Security — from a single toolchain.
 
-[![QA Automation Template Promo](https://camo.githubusercontent.com/223428dcc4df8bb1aecce4691291298c070b674d343f7462d54c1240611eed8b/68747470733a2f2f692e6962622e636f2f393978594d71484e2f34336266343264332d393431312d346663662d626138362d3162623138363465386537632e706e67)](https://camo.githubusercontent.com/223428dcc4df8bb1aecce4691291298c070b674d343f7462d54c1240611eed8b/68747470733a2f2f692e6962622e636f2f393978594d71484e2f34336266343264332d393431312d346663662d626138362d3162623138363465386537632e706e67)
+![QA Pipeline Banner](assets/banner.png)
 
 The template ships **pre-wired against [saucedemo.com](https://www.saucedemo.com)** so it works the moment you clone it. Adopt it by swapping `BASE_URL` to your app and adapting the page objects.
 
